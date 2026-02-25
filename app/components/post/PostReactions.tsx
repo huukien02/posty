@@ -1,0 +1,174 @@
+"use client";
+import { useState, useEffect } from "react";
+import { Box, IconButton, Popover, Typography } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import { doc, onSnapshot, runTransaction, increment } from "firebase/firestore";
+import { db } from "@/lib/firebase.config";
+
+const reactions = [
+  { type: "love", icon: "❤️" },
+  { type: "like", icon: "👍" },
+  { type: "dislike", icon: "👎" },
+  { type: "funny", icon: "😀" },
+];
+
+interface PostReactionsProps {
+  post: any;
+  currentUserId: string;
+}
+
+export default function PostReactions({
+  post,
+  currentUserId,
+}: PostReactionsProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reactionsCount, setReactionsCount] = useState<Record<string, number>>(
+    {}
+  );
+  const [userReaction, setUserReaction] = useState<string | null>(null);
+
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(e.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  // default counts để luôn có đủ key
+  const defaultCounts = reactions.reduce((acc, r) => {
+    acc[r.type] = 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const handleSelectReaction = async (type: string) => {
+    handleClose();
+    if (!post?.id || !currentUserId) return;
+
+    const postRef = doc(db, "posts", post.id);
+    const userReactionRef = doc(
+      db,
+      "posts",
+      post.id,
+      "reactions",
+      currentUserId
+    );
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // đọc dữ liệu
+        const postSnap = await transaction.get(postRef);
+        const userSnap = await transaction.get(userReactionRef);
+
+        if (!postSnap.exists()) throw new Error("Post not found");
+
+        const data = postSnap.data();
+        const counts: Record<string, number> = {
+          ...defaultCounts,
+          ...(data.reactionsCount || {}),
+        };
+
+        // nếu user bấm lại cùng reaction → remove
+        if (userSnap.exists() && userSnap.data().type === type) {
+          transaction.delete(userReactionRef);
+          counts[type] = Math.max(0, (counts[type] || 0) - 1);
+        } else {
+          // nếu có reaction cũ → trừ
+          if (userSnap.exists()) {
+            const oldType = userSnap.data().type;
+            counts[oldType] = Math.max(0, (counts[oldType] || 0) - 1);
+          }
+          // set reaction mới
+          transaction.set(userReactionRef, { type, createdAt: Date.now() });
+          counts[type] = (counts[type] || 0) + 1;
+        }
+
+        // update lại counts
+        transaction.update(postRef, { reactionsCount: counts });
+      });
+    } catch (err) {
+      console.error("Transaction failed:", err);
+    }
+  };
+
+  // listen tổng reactionsCount
+  useEffect(() => {
+    if (!post?.id) return;
+    const unsub = onSnapshot(doc(db, "posts", post.id), (snap) => {
+      if (!snap.exists()) return;
+      const rc = snap.data().reactionsCount || {};
+      setReactionsCount({ ...defaultCounts, ...rc });
+    });
+    return () => unsub();
+  }, [post?.id]);
+
+  // listen reaction của chính user
+  useEffect(() => {
+    if (!post?.id || !currentUserId) {
+      setUserReaction(null);
+      return;
+    }
+    const unsub = onSnapshot(
+      doc(db, "posts", post.id, "reactions", currentUserId),
+      (snap) => {
+        if (!snap.exists()) setUserReaction(null);
+        else setUserReaction(snap.data().type || null);
+      }
+    );
+    return () => unsub();
+  }, [post?.id, currentUserId]);
+
+  if (!post?.id || !currentUserId) return null;
+
+  return (
+    <Box display="flex" alignItems="center" mt={1}>
+      {/* nút mở reactions */}
+      <IconButton  onClick={handleOpen}>
+        {userReaction ? (
+          reactions.find((r) => r.type === userReaction)?.icon
+        ) : (
+          // <ThumbUpIcon />
+          <span style={{ fontSize: "1em" }}>👍</span>
+        )}
+      </IconButton>
+
+      {/* popup chọn reaction */}
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Box display="flex" p={1}>
+          {reactions.map((r) => (
+            <IconButton
+              key={r.type}
+              onClick={() => handleSelectReaction(r.type)}
+              sx={{
+                bgcolor:
+                  userReaction === r.type ? "action.selected" : "transparent",
+                borderRadius: "50%",
+              }}
+            >
+              {r.icon}
+            </IconButton>
+          ))}
+        </Box>
+      </Popover>
+
+      {/* hiển thị counts */}
+      <Box ml={2} display="flex" alignItems="center" gap={1}>
+        {reactions
+          .filter((r) => (reactionsCount[r.type] ?? 0) > 0)
+          .map((r) => (
+            <Box key={r.type} display="flex" alignItems="center" gap={0.5}>
+              {r.icon}
+              <Typography variant="body2">
+                {reactionsCount[r.type] ?? 0}
+              </Typography>
+            </Box>
+          ))}
+      </Box>
+    </Box>
+  );
+}
