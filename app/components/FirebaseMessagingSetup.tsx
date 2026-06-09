@@ -27,6 +27,20 @@ export default function FirebaseMessagingSetup() {
         );
         console.log("Service Worker registered:", registration);
 
+        // Bỏ qua nếu trình duyệt không hỗ trợ hoặc người dùng đã chặn thông báo.
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "denied") {
+          console.warn("Thông báo đã bị chặn — bỏ qua đăng ký FCM token.");
+          return;
+        }
+        if (Notification.permission === "default") {
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") {
+            console.warn("Người dùng chưa cấp quyền thông báo.");
+            return;
+          }
+        }
+
         const messaging = getMessaging(app);
 
         // Lấy device token

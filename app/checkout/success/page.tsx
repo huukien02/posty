@@ -1,112 +1,87 @@
 "use client";
 
 // app/checkout/success/page.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Typography, Box, Button } from "@mui/material";
 import Link from "next/link";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase.config";
 import { useSearchParams } from "next/navigation";
 
-interface Props {
-  searchParams: {
-    amount?: string;
-    email?: string;
-    session_id?: string;
-  };
-}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
-  const amount = Number(searchParams.get("amount") || "0");
-  const transactionId = searchParams.get("session_id") || "";
-  const [status, setStatus] = useState<
-    "loading" | "success" | "already_completed" | "error"
-  >("loading");
+  const sessionId = searchParams.get("session_id") || "";
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
+  const [postsRemaining, setPostsRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!email || !amount || !transactionId) return;
-    const processTransaction = async () => {
+    if (!sessionId) {
+      setStatus("error");
+      return;
+    }
+
+    // Slot đã được CỘNG Ở SERVER qua Stripe webhook (đã verify thanh toán).
+    // Trang này chỉ làm mới số dư từ Firestore để hiển thị, không tự cộng gì.
+    const refreshUser = async () => {
       try {
-        if (!email || !amount || !transactionId) {
-          setStatus("error");
+        const stored = localStorage.getItem("user");
+        if (!stored) {
+          setStatus("success");
+          return;
+        }
+        const localUser = JSON.parse(stored);
+        const email = localUser?.email;
+        if (!email) {
+          setStatus("success");
           return;
         }
 
-        const txRef = doc(db, "transactions", transactionId);
-        const txSnap = await getDoc(txRef);
+        // Webhook có thể xử lý trễ vài giây -> thử lại tối đa 5 lần.
+        const before = Number(localUser.postsRemaining ?? 0);
+        for (let i = 0; i < 5; i++) {
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", email),
+          );
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const fresh = { id: snap.docs[0].id, ...snap.docs[0].data() } as any;
+            const now = Number(fresh.postsRemaining ?? 0);
 
-        if (!txSnap.exists()) {
-          await setDoc(txRef, {
-            email,
-            amount,
-            status: "pending",
-            createdAt: Date.now(),
-          });
-        }
+            localStorage.setItem("user", JSON.stringify(fresh));
+            window.dispatchEvent(new Event("userChanged"));
+            setPostsRemaining(now);
 
-        const txData = (await getDoc(txRef)).data();
-
-        if (txData?.status !== "completed") {
-          const q = query(collection(db, "users"), where("email", "==", email));
-          const snapshot = await getDocs(q);
-
-          if (!snapshot.empty) {
-            const userDoc = snapshot.docs[0];
-            await updateDoc(userDoc.ref, {
-              postsRemaining: increment(amount),
-            });
-
-            const updated = await getDoc(userDoc.ref);
-
-            localStorage.setItem(
-              "user",
-              JSON.stringify({ id: userDoc.id, ...updated.data() })
-            );
+            // Đã thấy số dư tăng -> dừng.
+            if (now > before) break;
           }
-
-          await updateDoc(txRef, {
-            status: "completed",
-            completedAt: Date.now(),
-          });
-
-          setStatus("success");
-        } else {
-          setStatus("already_completed");
+          await sleep(1500);
         }
+
+        setStatus("success");
       } catch (err) {
-        console.error("❌ Error processing transaction:", err);
-        console.error("📌 Debug info:", { email, amount, transactionId });
+        console.error("❌ Error refreshing user:", err);
         setStatus("error");
       }
     };
 
-    processTransaction();
-  }, [email, amount, transactionId]);
+    refreshUser();
+  }, [sessionId]);
 
   const renderMessage = () => {
     switch (status) {
       case "loading":
-        return "⏳ Đang xử lý giao dịch...";
+        return "⏳ Đang xác nhận giao dịch...";
       case "success":
-        return amount > 0
-          ? `Bạn đã nhận thêm ${amount} lượt đăng bài cho tài khoản ${email}.`
-          : "Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xử lý thành công.";
-      case "already_completed":
-        return "⚠️ Giao dịch này đã được xử lý trước đó. Không thể cộng thêm lượt.";
+        return postsRemaining !== null
+          ? `Số lượt đăng bài hiện tại của bạn: ${postsRemaining}.`
+          : "Cảm ơn bạn đã mua hàng. Lượt đăng bài sẽ được cộng sau khi thanh toán được xác nhận.";
       case "error":
-        return "❌ Lỗi: Không thể xử lý giao dịch. Vui lòng liên hệ hỗ trợ.";
+        return "❌ Không xác nhận được giao dịch. Nếu đã bị trừ tiền, lượt sẽ được cộng tự động sau ít phút. Vui lòng liên hệ hỗ trợ nếu cần.";
     }
   };
 
@@ -123,11 +98,9 @@ export default function CheckoutSuccessPage() {
         <Typography variant="h5" fontWeight="bold">
           {status === "success"
             ? "🎉 Thanh toán thành công!"
-            : status === "already_completed"
-            ? "⚠️ Giao dịch được xử lý trước đó"
             : status === "error"
-            ? "❌ Lỗi giao dịch"
-            : "⏳ Đang xử lý..."}
+              ? "⚠️ Đang xử lý"
+              : "⏳ Đang xác nhận..."}
         </Typography>
 
         <Typography variant="body1" align="center">

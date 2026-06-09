@@ -385,9 +385,12 @@ export default function HomePage() {
             const medal = medalEmojis[i] || "🏅"; // nếu nhiều hơn top 3 thì dùng huy chương chung
 
             return (
-              <Link key={post.id} href={`/posts/${post.id}`} passHref>
+              <Link
+                key={post.id}
+                href={`/posts/${post.id}`}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
                 <Box
-                  component="a"
                   sx={(theme) => ({
                     mb: 2,
                     display: "flex",

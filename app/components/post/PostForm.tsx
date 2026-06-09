@@ -143,7 +143,7 @@ export default function PostForm({ userId, onPostAdded }: PostFormProps) {
       {/* Header với Avatar */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
         <Avatar
-          src={user?.avatar || ""}
+          src={user?.avatar || undefined}
           alt={user?.username || "User"}
           sx={{ width: 48, height: 48, mr: 2 }}
         />

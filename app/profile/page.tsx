@@ -686,11 +686,13 @@ const ProfilePage: React.FC = () => {
         maxWidth="lg"
       >
         <DialogContent>
-          <img
-            src={zoomImage || ""}
-            alt="Zoom"
-            style={{ width: "100%", height: "auto" }}
-          />
+          {zoomImage && (
+            <img
+              src={zoomImage}
+              alt="Zoom"
+              style={{ width: "100%", height: "auto" }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </Box>

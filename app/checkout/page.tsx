@@ -10,10 +10,10 @@ import {
   CardActions,
   Button,
 } from "@mui/material";
-import { loadStripe } from "@stripe/stripe-js";
-import Stripe from "stripe";
+import { toast } from "react-toastify";
 import { useUser } from "@/hooks/useUser";
 
+// Chỉ để hiển thị; server (lib/stripe.ts) mới là nguồn sự thật về giá & số slot.
 const plans = [
   { amount: 1, slots: 100 },
   { amount: 10, slots: 1000 },
@@ -26,40 +26,29 @@ export default function StripeTestPage() {
 
   const handleCheckout = async (amount: number) => {
     if (!user) {
-      alert("User not logged in");
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    const stripe = new Stripe(
-      "sk_test_51S8Cx2EDgScNEVgkWtz2HT6egYnqryuAn9kdkvOfETv91LdobcraXBGBlnq9CsfSA0c8KDDW041wqpkabTtAHS9n00VUKjP5lC"
-    );
+    try {
+      // Tạo session ở server -> secret key không lộ ra client.
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, email: user.email }),
+      });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Buy ${amount} post slot(s)`,
-            },
-            unit_amount: amount * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      success_url: `https://x-fe7d.vercel.app/checkout/success?amount=${amount}&email=${encodeURIComponent(
-        user.email
-      )}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: "https://x-fe7d.vercel.app/checkout/cancel",
-    });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        toast.error(data.error || "Không tạo được phiên thanh toán");
+        return;
+      }
 
-    const stripeJs = await loadStripe(
-      "pk_test_51S8Cx2EDgScNEVgkRKUcCaqxPgaGgysQuP8hkdrSW73opPciHfpmiQTPQpsp2TSy9bUOI7aE7rTynrs8MHSe3EWR00Btspet4f"
-    );
-    if (session.id) {
-      stripeJs?.redirectToCheckout({ sessionId: session.id });
+      // Chuyển sang trang Checkout của Stripe.
+      window.location.href = data.url;
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối tới máy chủ thanh toán");
     }
   };
 

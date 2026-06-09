@@ -1,8 +1,10 @@
 import { v2 as cloudinary } from "cloudinary";
 
-const CLOUD_NAME = "dhmr88vva";
-const API_KEY = "731336174326163"; // thay bằng của bạn
-const API_SECRET = "AAGsmaOjLycO8aHDszt6r-ad2zQ"; // thay bằng của bạn (chỉ ở đây, KHÔNG ở client!)
+export const runtime = "nodejs";
+
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME!;
+const API_KEY = process.env.CLOUDINARY_API_KEY!;
+const API_SECRET = process.env.CLOUDINARY_API_SECRET!; // chỉ ở server, KHÔNG ở client!
 
 cloudinary.config({
   cloud_name: CLOUD_NAME,
@@ -17,7 +19,7 @@ export async function POST(request: Request) {
   // Tạo signature hợp lệ
   const signature = cloudinary.utils.api_sign_request(
     { timestamp, folder },
-    API_SECRET
+    API_SECRET,
   );
 
   return Response.json({
