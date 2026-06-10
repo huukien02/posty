@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase.config";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "react-toastify";
 
-export default function ProfileAvatar() {
+export default function ProfileAvatar({ size = 60 }: { size?: number }) {
   const user = useUser();
   const [preview, setPreview] = useState(user?.avatar || "");
   const [uploading, setUploading] = useState(false);
@@ -70,11 +70,13 @@ export default function ProfileAvatar() {
         <Avatar
           src={preview || user?.avatar}
           sx={{
-            width: 60,
-            height: 60,
-            border: "2px solid #ccc",
+            width: size,
+            height: size,
+            border: "4px solid",
+            borderColor: "background.paper",
+            boxShadow: "0 6px 20px rgba(2,6,23,0.25)",
             transition: "0.2s",
-            "&:hover": { opacity: 0.8 },
+            "&:hover": { opacity: 0.85 },
           }}
         >
           {user?.username?.[0] || user?.email?.[0]}

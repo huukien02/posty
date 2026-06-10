@@ -5,8 +5,8 @@ import {
   Card,
   CardMedia,
   CardContent,
+  Container,
   Typography,
-  Avatar,
   IconButton,
   Tooltip,
   Dialog,
@@ -16,10 +16,14 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Pagination,
   DialogTitle,
   DialogActions,
+  Paper,
+  Stack,
+  Skeleton,
+  Divider,
 } from "@mui/material";
+import PaginationCustom from "../components/PaginationCustom";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DownloadIcon from "@mui/icons-material/Download";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
@@ -235,113 +239,103 @@ const ProfilePage: React.FC = () => {
   const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(posts.length / postsPerPage);
 
-  return (
-    <Box
-      sx={{
-        margin: { xs: 0, sm: "0 auto" },
-        mt: { xs: 2, sm: 4 },
-        px: 2,
-        pb: 2,
-        width: { xs: "100%", sm: "60%" },
-      }}
-    >
-      {/* Header User */}
-      <Box display="flex" alignItems="center" mb={4} width={"100%"}>
-        <ProfileAvatar />
-        <Box>
-          <Typography variant="h5">{user.username || user.email}</Typography>
-          <Typography variant="body2">{user.email}</Typography>
-        </Box>
-      </Box>
+  const stats = {
+    total: posts.length,
+    favorites: posts.filter((p) => p.favorite).length,
+    hidden: posts.filter((p) => !p.visible).length,
+  };
 
-      <Box
-        display="flex"
-        gap={2}
-        mb={4}
-        width="100%"
-        sx={{
-          justifyContent: { xs: "center", sm: "flex-start" },
-          flexWrap: "wrap",
-        }}
+  return (
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      {/* ===== Header hồ sơ ===== */}
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          overflow: "hidden",
+          borderRadius: 4,
+          border: `1px solid ${theme.palette.divider}`,
+          mb: 4,
+        })}
       >
-        {/* Post Button */}
+        {/* Ảnh bìa gradient */}
+        <Box
+          sx={(theme) => {
+            const isDark = theme.palette.mode === "dark";
+            const c1 = isDark ? "#1e1b4b" : "#4f46e5";
+            const c2 = isDark ? "#3b0764" : "#7c3aed";
+            return {
+              height: { xs: 110, md: 150 },
+              background: `radial-gradient(120% 120% at 85% 10%, ${alpha(
+                "#ffffff",
+                isDark ? 0.08 : 0.16
+              )} 0%, transparent 50%), linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+            };
+          }}
+        />
+        <Box sx={{ px: { xs: 2, md: 4 }, pb: 3 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems={{ xs: "flex-start", sm: "flex-end" }}
+            sx={{ mt: { xs: -6, md: -7 } }}
+          >
+            <ProfileAvatar size={100} />
+            <Box sx={{ flex: 1, pb: 0.5, minWidth: 0 }}>
+              <Typography variant="h5" fontWeight={800} noWrap>
+                {user.username || user.email}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {user.email}
+              </Typography>
+            </Box>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              divider={<Divider orientation="vertical" flexItem />}
+              sx={{ pb: 0.5 }}
+            >
+              <ProfileStat value={stats.total} label="Bài viết" />
+              <ProfileStat value={stats.favorites} label="Yêu thích" />
+              <ProfileStat value={stats.hidden} label="Đã ẩn" />
+            </Stack>
+          </Stack>
+        </Box>
+      </Paper>
+
+      <Stack
+        direction="row"
+        spacing={1.5}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 3 }}
+      >
         <Button
           startIcon={openPostForm ? <CloseIcon /> : <AddIcon />}
           onClick={() => setOpenPostForm((prev) => !prev)}
-          variant="contained"
-          sx={(theme) => ({
-            textTransform: "none",
-            borderRadius: 2,
-            px: 3,
-            py: 1.2,
-            backgroundColor: openPostForm
-              ? theme.palette.primary.dark
-              : theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
-            boxShadow: openPostForm ? theme.shadows[4] : theme.shadows[2],
-            "&:hover": {
-              backgroundColor: openPostForm
-                ? theme.palette.primary.main
-                : theme.palette.primary.dark,
-              boxShadow: theme.shadows[4],
-            },
-          })}
+          variant={openPostForm ? "contained" : "outlined"}
+          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
         >
-          {openPostForm ? "Post (Mở)" : "Post"}
+          Bài viết
         </Button>
 
-        {/* Collection Button */}
         <Button
           startIcon={openCollection ? <CloseIcon /> : <PermMediaIcon />}
           onClick={() => setOpenCollection((prev) => !prev)}
-          variant="contained"
-          sx={(theme) => ({
-            textTransform: "none",
-            borderRadius: 2,
-            px: 3,
-            py: 1.2,
-            backgroundColor: openCollection
-              ? theme.palette.primary.dark
-              : theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
-            boxShadow: openCollection ? theme.shadows[4] : theme.shadows[2],
-            "&:hover": {
-              backgroundColor: openCollection
-                ? theme.palette.primary.main
-                : theme.palette.primary.dark,
-              boxShadow: theme.shadows[4],
-            },
-          })}
+          variant={openCollection ? "contained" : "outlined"}
+          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
         >
-          {openCollection ? "Collection (Mở)" : "Collection"}
+          Bộ sưu tập
         </Button>
 
-        {/* Filter Button */}
         <Button
           startIcon={openFilter ? <CloseIcon /> : <SearchIcon />}
           onClick={() => setOpenFilter((prev) => !prev)}
-          variant="contained"
-          sx={(theme) => ({
-            textTransform: "none",
-            borderRadius: 2,
-            px: 3,
-            py: 1.2,
-            backgroundColor: openCollection
-              ? theme.palette.primary.dark
-              : theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
-            boxShadow: openCollection ? theme.shadows[4] : theme.shadows[2],
-            "&:hover": {
-              backgroundColor: openCollection
-                ? theme.palette.primary.main
-                : theme.palette.primary.dark,
-              boxShadow: theme.shadows[4],
-            },
-          })}
+          variant={openFilter ? "contained" : "outlined"}
+          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
         >
-          {openFilter ? "Filter (Mở)" : "Filter"}
+          Bộ lọc
         </Button>
-      </Box>
+      </Stack>
 
       <Dialog
         open={openPostForm}
@@ -381,7 +375,15 @@ const ProfilePage: React.FC = () => {
       )}
 
       {openFilter && (
-        <Box minWidth={"100%"}>
+        <Paper
+          elevation={0}
+          sx={(theme) => ({
+            p: { xs: 2, md: 3 },
+            mb: 4,
+            borderRadius: 4,
+            border: `1px solid ${theme.palette.divider}`,
+          })}
+        >
           {/* Filter Date + Favorite */}
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box
@@ -389,7 +391,7 @@ const ProfilePage: React.FC = () => {
               flexDirection={{ xs: "column", sm: "row" }}
               gap={2}
               mb={2}
-              pt={2}
+              flexWrap="wrap"
             >
               <DatePicker
                 label="Start Date"
@@ -446,16 +448,18 @@ const ProfilePage: React.FC = () => {
               </FormControl>
             </Box>
 
-            <Box display="flex" gap={2} mb={4}>
+            <Box display="flex" gap={2}>
               <Button
                 variant="contained"
                 onClick={() => fetchUserPosts(user.email)}
+                sx={{ borderRadius: 2.5, px: 3 }}
               >
-                Filter
+                Áp dụng
               </Button>
               <Button
                 variant="outlined"
                 color="secondary"
+                sx={{ borderRadius: 2.5, px: 3 }}
                 onClick={() => {
                   setStartDate(null);
                   setEndDate(null);
@@ -464,11 +468,11 @@ const ProfilePage: React.FC = () => {
                   setSelectedCollection("all");
                 }}
               >
-                Clear
+                Xóa lọc
               </Button>
             </Box>
           </LocalizationProvider>
-        </Box>
+        </Paper>
       )}
 
       {selectedCollection !== "all" && (
@@ -481,9 +485,46 @@ const ProfilePage: React.FC = () => {
 
       {/* Posts Grid */}
       {loading ? (
-        <Typography>Loading posts...</Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 2.5,
+          }}
+        >
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Box key={i}>
+              <Skeleton
+                variant="rounded"
+                height={170}
+                sx={{ borderRadius: 3, mb: 1 }}
+              />
+              <Skeleton variant="text" width="80%" />
+              <Skeleton variant="text" width="50%" />
+            </Box>
+          ))}
+        </Box>
       ) : posts.length === 0 ? (
-        <Typography sx={{ mt: 5 }}>No posts yet.</Typography>
+        <Paper
+          elevation={0}
+          sx={(theme) => ({
+            py: 8,
+            textAlign: "center",
+            borderRadius: 4,
+            border: `1px dashed ${theme.palette.divider}`,
+          })}
+        >
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            Chưa có bài viết nào 📭
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Nhấn “Bài viết” để tạo bài đầu tiên của bạn.
+          </Typography>
+        </Paper>
       ) : (
         <>
           <Box
@@ -494,18 +535,27 @@ const ProfilePage: React.FC = () => {
                 sm: "repeat(2, 1fr)",
                 md: "repeat(4, 1fr)",
               },
-              gap: 2,
+              gap: 2.5,
             }}
           >
             {currentPosts.map((post) => (
               <Card
                 key={post.id}
-                sx={{
+                elevation={0}
+                sx={(theme) => ({
                   position: "relative",
                   cursor: "pointer",
-                  transition: "transform 0.3s, box-shadow 0.3s",
-                  "&:hover": { transform: "translateY(-5px)", boxShadow: 6 },
-                }}
+                  borderRadius: 3,
+                  border: `1px solid ${theme.palette.divider}`,
+                  overflow: "hidden",
+                  transition:
+                    "transform .25s, box-shadow .25s, border-color .25s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 14px 30px rgba(2,6,23,0.12)",
+                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                  },
+                })}
               >
                 {post.imageUrl && (
                   <Box sx={{ width: "100%", pt: "75%", position: "relative" }}>
@@ -664,15 +714,12 @@ const ProfilePage: React.FC = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <Box
-              sx={{ mt: 3, pb: 3, display: "flex", justifyContent: "center" }}
+              sx={{ mt: 4, pb: 2, display: "flex", justifyContent: "center" }}
             >
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={(_, page) => setCurrentPage(page)}
-                color="primary"
-                size="large"
-                variant="outlined"
+              <PaginationCustom
+                totalPages={totalPages}
+                currentPage={currentPage}
+                onPageChange={(page) => setCurrentPage(page)}
               />
             </Box>
           )}
@@ -684,19 +731,58 @@ const ProfilePage: React.FC = () => {
         open={!!zoomImage}
         onClose={() => setZoomImage(null)}
         maxWidth="lg"
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: "transparent",
+              boxShadow: "none",
+              m: 2,
+              maxWidth: "none",
+            },
+          },
+        }}
       >
-        <DialogContent>
+        <DialogContent
+          sx={{
+            p: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
           {zoomImage && (
             <img
               src={zoomImage}
               alt="Zoom"
-              style={{ width: "100%", height: "auto" }}
+              style={{
+                display: "block",
+                maxWidth: "92vw",
+                maxHeight: "88vh",
+                width: "auto",
+                height: "auto",
+                objectFit: "contain",
+                borderRadius: 8,
+              }}
             />
           )}
         </DialogContent>
       </Dialog>
-    </Box>
+    </Container>
   );
 };
+
+function ProfileStat({ value, label }: { value: number; label: string }) {
+  return (
+    <Box sx={{ textAlign: "center", px: 1.5, minWidth: 64 }}>
+      <Typography variant="h6" fontWeight={800} lineHeight={1.1}>
+        {value}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+    </Box>
+  );
+}
 
 export default ProfilePage;

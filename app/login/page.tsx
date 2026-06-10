@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, Typography, Divider } from "@mui/material";
+import { Box, Button, Typography, Divider, Paper } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import {
@@ -109,42 +111,84 @@ export default function LoginPage() {
 
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="100%"
+      sx={(theme) => {
+        const isDark = theme.palette.mode === "dark";
+        return {
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+          width: "100%",
+          background: `radial-gradient(60% 60% at 50% 0%, ${alpha(
+            theme.palette.primary.main,
+            isDark ? 0.12 : 0.08
+          )} 0%, transparent 70%)`,
+        };
+      }}
     >
-      <Box
-        width={400}
-        border="1px solid #ccc"
-        borderRadius={2}
-        p={3}
-        boxShadow={1}
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          width: "100%",
+          maxWidth: 410,
+          p: { xs: 3, md: 4 },
+          borderRadius: 4,
+          textAlign: "center",
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: "0 16px 48px rgba(2,6,23,0.12)",
+          bgcolor: theme.palette.background.paper,
+        })}
       >
-        <Typography variant="h5" align="center" mb={1}>
-          Đăng nhập
-        </Typography>
-        <Typography
-          variant="body2"
-          align="center"
-          color="text.secondary"
-          mb={3}
+        <Box
+          sx={{
+            width: 64,
+            height: 64,
+            mx: "auto",
+            mb: 2,
+            borderRadius: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+          }}
         >
-          Chọn một tài khoản để tiếp tục
+          <Image src="/favicon.ico" alt="Posty" width={36} height={36} />
+        </Box>
+
+        <Typography variant="h5" fontWeight={800}>
+          Chào mừng đến Posty
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={3.5}>
+          Đăng nhập để tiếp tục
         </Typography>
 
         <Button
-          variant="contained"
+          variant="outlined"
           fullWidth
           size="large"
           disabled={loading}
           onClick={handleGoogleLogin}
           startIcon={<Google />}
+          sx={(theme) => ({
+            borderRadius: 2.5,
+            py: 1.25,
+            fontWeight: 600,
+            color: theme.palette.text.primary,
+            borderColor: theme.palette.divider,
+            "&:hover": {
+              borderColor: theme.palette.primary.main,
+              bgcolor: alpha(theme.palette.primary.main, 0.06),
+            },
+          })}
         >
           Đăng nhập với Google
         </Button>
 
-        <Divider sx={{ my: 2 }}>hoặc</Divider>
+        <Divider sx={{ my: 2, color: "text.secondary", fontSize: 13 }}>
+          hoặc
+        </Divider>
 
         <Button
           variant="contained"
@@ -153,11 +197,26 @@ export default function LoginPage() {
           disabled={loading}
           onClick={handleFacebookLogin}
           startIcon={<Facebook />}
-          sx={{ bgcolor: "#1877F2", "&:hover": { bgcolor: "#166FE5" } }}
+          sx={{
+            borderRadius: 2.5,
+            py: 1.25,
+            fontWeight: 600,
+            bgcolor: "#1877F2",
+            "&:hover": { bgcolor: "#166FE5" },
+          }}
         >
           Đăng nhập với Facebook
         </Button>
-      </Box>
+
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mt: 3.5, lineHeight: 1.6 }}
+        >
+          Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và Chính sách
+          bảo mật của chúng tôi.
+        </Typography>
+      </Paper>
     </Box>
   );
 }

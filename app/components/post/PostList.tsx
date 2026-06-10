@@ -1,128 +1,96 @@
 "use client";
-import { useEffect, useState } from "react";
-import { db } from "../../../lib/firebase.config";
-import { collection, query, orderBy, getDocs, where } from "firebase/firestore";
+import { useEffect, useMemo, useState } from "react";
 import PostCard from "./PostCard";
-import { Box, Button, Pagination } from "@mui/material";
+import { Box, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import PaginationCustom from "../PaginationCustom";
+import type { PostWithDetails } from "../../lib/fetchPosts";
 
-interface User {
-  id: string;
-  username: string;
-  avatar: string;
-}
-interface Comment {
-  id: string;
-  text: string;
-  user: User;
-}
-interface Post {
-  id: string;
-  title: string;
-  thrilled: string;
-  imageUrl: string;
-  imageUrls: string[];
-  author: User;
-  comments: Comment[];
-  sent: boolean;
-  createdAt: string | number;
-  favorite: boolean;
-  visible: boolean;
-  shareCount: number;
-  reactionsCount: number;
+function PostSkeleton() {
+  return (
+    <Paper
+      elevation={0}
+      sx={(theme) => ({
+        mb: 3,
+        p: 2,
+        borderRadius: 4,
+        border: `1px solid ${theme.palette.divider}`,
+      })}
+    >
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+        <Skeleton variant="circular" width={40} height={40} />
+        <Box sx={{ flex: 1 }}>
+          <Skeleton variant="text" width="40%" />
+          <Skeleton variant="text" width="25%" />
+        </Box>
+      </Stack>
+      <Skeleton variant="rounded" height={180} sx={{ borderRadius: 2, mb: 2 }} />
+      <Skeleton variant="text" width="90%" />
+      <Skeleton variant="text" width="70%" />
+    </Paper>
+  );
 }
 
 interface PostListProps {
   currentUserId: string;
-  refreshKey: number;
+  posts: PostWithDetails[];
+  loading: boolean;
+  onRefresh: () => void;
 }
 
-export default function PostList({ currentUserId, refreshKey }: PostListProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
+const PAGE_SIZE = 3;
+
+export default function PostList({
+  currentUserId,
+  posts,
+  loading,
+  onRefresh,
+}: PostListProps) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const PAGE_SIZE = 3;
-
-  // Lấy user từ email
-  const getUserByEmail = async (email: string): Promise<User> => {
-    const userQ = query(collection(db, "users"), where("email", "==", email));
-    const snap = await getDocs(userQ);
-    if (!snap.empty) {
-      const u = snap.docs[0];
-      const data = u.data();
-      return {
-        id: u.id,
-        username: data.username ?? "Unknown",
-        avatar: data.avatar ?? "",
-      };
-    }
-    return { id: "", username: "Unknown", avatar: "" };
-  };
-
-  // Load tất cả posts
-  const fetchPosts = async () => {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
-
-      const postsData: (Post | null)[] = await Promise.all(
-        snap.docs.map(async (docSnap) => {
-          const postData = docSnap.data();
-          if (!postData.visible) return null;
-
-          const author = await getUserByEmail(postData.authorId);
-
-          const commentsSnap = await getDocs(
-            collection(db, "posts", docSnap.id, "comments")
-          );
-          const comments: Comment[] = await Promise.all(
-            commentsSnap.docs.map(async (c) => {
-              const cData = c.data();
-              const user = await getUserByEmail(cData.userId);
-              return { id: c.id, text: cData.text, user };
-            })
-          );
-
-          return {
-            id: docSnap.id,
-            title: postData.title,
-            thrilled: postData.thrilled,
-            imageUrl: postData.imageUrl,
-            imageUrls: postData.imageUrls,
-            sent: postData.sent,
-            createdAt: postData.createdAt,
-            author,
-            comments,
-            shareCount: postData.shareCount ?? 0,
-            favorite: postData.favorite ?? false,
-            visible: postData.visible ?? true,
-          } as Post;
-        })
-      );
-
-      setPosts(postsData.filter((p): p is Post => p !== null));
-      setCurrentPage(1); // reset về trang đầu
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, [refreshKey]);
-
-  // Tính phân trang
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
-  const paginatedPosts = posts.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+
+  // Giữ currentPage hợp lệ khi số lượng post thay đổi (vd. sau khi refresh)
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages > 0 ? totalPages : 1);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedPosts = useMemo(
+    () =>
+      posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [posts, currentPage]
   );
+
+  if (loading && posts.length === 0) {
+    return (
+      <Box>
+        <PostSkeleton />
+        <PostSkeleton />
+      </Box>
+    );
+  }
+
+  if (!loading && posts.length === 0) {
+    return (
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          py: 8,
+          textAlign: "center",
+          borderRadius: 4,
+          border: `1px dashed ${theme.palette.divider}`,
+        })}
+      >
+        <Typography variant="h6" fontWeight={700} gutterBottom>
+          Chưa có bài viết nào 📭
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Hãy quay lại sau để xem những câu chuyện mới nhất.
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Box sx={{ paddingBottom: 5 }}>
@@ -131,19 +99,12 @@ export default function PostList({ currentUserId, refreshKey }: PostListProps) {
           key={post.id}
           post={post}
           currentUserId={currentUserId}
-          onRefresh={fetchPosts}
+          onRefresh={onRefresh}
         />
       ))}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <Box py={2} display="flex" justifyContent="center" mt={3}>
-          {/* <Pagination
-            count={totalPages} // Tổng số trang
-            page={currentPage} // Trang hiện tại
-            onChange={(_, page) => setCurrentPage(page)} // Hàm đổi trang
-           
-          /> */}
           <PaginationCustom
             totalPages={totalPages}
             currentPage={currentPage}

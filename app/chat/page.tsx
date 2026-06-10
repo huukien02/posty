@@ -6,15 +6,19 @@ import {
   Avatar,
   List,
   ListItemAvatar,
-  ListItemText,
   ListItemButton,
   TextField,
-  Button,
-  Divider,
   Badge,
-  Popover,
   IconButton,
+  Stack,
+  InputAdornment,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import {
+  Send,
+  Search as SearchIcon,
+  ChatBubbleOutline,
+} from "@mui/icons-material";
 import { useUser } from "@/hooks/useUser";
 import { db as fsDb, rtdb } from "@/lib/firebase.config";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -295,316 +299,626 @@ export default function ChatPage() {
     );
   }, [users, search]);
 
+  // 🔹 Helper định dạng thời gian / ngày
+  const formatTime = (ts?: number) =>
+    ts
+      ? new Date(ts).toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+
+  const isSameDay = (a?: number, b?: number) => {
+    if (!a || !b) return false;
+    return new Date(a).toDateString() === new Date(b).toDateString();
+  };
+
+  const formatDayLabel = (ts?: number) => {
+    if (!ts) return "";
+    const d = new Date(ts).toDateString();
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (d === today) return "Hôm nay";
+    if (d === yesterday) return "Hôm qua";
+    return new Date(ts).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // 🔹 Sắp xếp hội thoại theo hoạt động gần nhất
+  const conversations = [...filteredUsers].sort((a, b) => {
+    const ra = findRoomWithUser(a.email)?.updatedAt || 0;
+    const rb = findRoomWithUser(b.email)?.updatedAt || 0;
+    return rb - ra;
+  });
+
   if (!user) return null;
 
   return (
-    <div className="flex flex-col flex-1 sm:flex-row">
-      <div className="md:w-1/4 w-full h-full border-r border-gray-300 flex flex-col">
-        {/* Header */}
-        <div className="h-[80px] font-bold flex items-center px-3 text-lg  border-b border-gray-300">
-          Users
-        </div>
-
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Tìm theo tên người dùng..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ mb: 1 }}
-        />
-
-        <div className="h-[calc(100vh-200px)] overflow-y-auto">
-          <List disablePadding>
-            {filteredUsers.map((u) => {
-              const room = findRoomWithUser(u.email);
-              const hasNew = room?.unreadBy?.includes(user.email);
-
-              return (
-                <ListItemButton
-                  key={u.id}
-                  selected={selectedUser?.id === u.id}
-                  onClick={() => handleSelectUser(u)}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "action.selected",
-                    },
-                    "&:hover": {
-                      backgroundColor: "action.hover",
-                    },
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Badge
-                      overlap="circular"
-                      variant="dot"
-                      color="error"
-                      invisible={!hasNew}
-                      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                      sx={{
-                        "& .MuiBadge-dot": {
-                          height: 15,
-                          minWidth: 15,
-                          borderRadius: "50%",
-                          border: "2px solid white", // tạo viền trắng giống Messenger
-                          fontWeight: "bold",
-                        },
-                      }}
-                    >
-                      <Avatar src={u.avatar || undefined}>
-                        {u.username?.[0]}
-                      </Avatar>
-                    </Badge>
-                  </ListItemAvatar>
-
-                  <ListItemText
-                    primary={u.username}
-                    secondary={u.email}
-                    primaryTypographyProps={{
-                      fontSize: "0.9rem",
-                      fontWeight: 500,
-                    }}
-                    secondaryTypographyProps={{
-                      fontSize: "0.75rem",
-                      color: "text.secondary",
-                    }}
-                  />
-                </ListItemButton>
-              );
-            })}
-          </List>
-        </div>
-      </div>
-
+    <Box
+      sx={(theme) => ({
+        flex: 1,
+        alignSelf: "stretch",
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        width: "100%",
+        minHeight: 0,
+        bgcolor: theme.palette.background.default,
+      })}
+    >
+      {/* ===== Sidebar danh sách ===== */}
       <Box
         sx={(theme) => ({
-          width: { xs: "100%", md: "75%" },
-          height: "100%",
-          overflowY: "auto", // ✅ thêm dòng này để có scrollbar
-          "&::-webkit-scrollbar": {
-            width: 8,
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor:
-              theme.palette.mode === "dark"
-                ? theme.palette.grey[700]
-                : theme.palette.grey[400],
-            borderRadius: 4,
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor:
-              theme.palette.mode === "dark"
-                ? theme.palette.background.default
-                : theme.palette.grey[200],
-          },
-          /* Firefox support */
-          scrollbarWidth: "thin",
-          scrollbarColor:
-            theme.palette.mode === "dark"
-              ? `${theme.palette.grey[700]} ${theme.palette.background.default}`
-              : `${theme.palette.grey[400]} ${theme.palette.grey[200]}`,
+          width: { xs: "100%", md: 320 },
+          flexShrink: 0,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          borderRight: { md: `1px solid ${theme.palette.divider}` },
+          borderBottom: { xs: `1px solid ${theme.palette.divider}`, md: "none" },
+          bgcolor: theme.palette.background.paper,
         })}
+      >
+        <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
+          <Typography variant="h6" fontWeight={800} sx={{ mb: 1.5 }}>
+            Tin nhắn 💬
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Tìm bạn bè..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      fontSize="small"
+                      sx={{ color: "text.secondary" }}
+                    />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Box>
+
+        <Box
+          sx={(theme) => ({
+            flex: 1,
+            overflowY: "auto",
+            minHeight: 0,
+            px: 1,
+            scrollbarWidth: "thin",
+            scrollbarColor: `${alpha(
+              theme.palette.primary.main,
+              0.6
+            )} transparent`,
+            "&::-webkit-scrollbar": { width: 8 },
+            "&::-webkit-scrollbar-thumb": {
+              background: alpha(theme.palette.primary.main, 0.5),
+              borderRadius: 8,
+            },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+          })}
+        >
+          {conversations.length === 0 ? (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ p: 2, textAlign: "center" }}
+            >
+              Không có bạn bè nào
+            </Typography>
+          ) : (
+            <List disablePadding>
+              {conversations.map((u) => {
+                const room = findRoomWithUser(u.email);
+                const hasNew = room?.unreadBy?.includes(user.email);
+                const lastMsg: string | undefined = room?.lastMessage;
+                const isMine = room?.lastSender === user.email;
+                const preview = lastMsg
+                  ? `${isMine ? "Bạn: " : ""}${lastMsg}`
+                  : u.email;
+
+                return (
+                  <ListItemButton
+                    key={u.id}
+                    selected={selectedUser?.id === u.id}
+                    onClick={() => handleSelectUser(u)}
+                    sx={{
+                      borderRadius: 2.5,
+                      mb: 0.5,
+                      py: 1,
+                      "&.Mui-selected": {
+                        bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
+                        "&:hover": {
+                          bgcolor: (t) => alpha(t.palette.primary.main, 0.18),
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Badge
+                        overlap="circular"
+                        variant="dot"
+                        color="error"
+                        invisible={!hasNew}
+                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                        sx={{
+                          "& .MuiBadge-dot": {
+                            height: 14,
+                            minWidth: 14,
+                            borderRadius: "50%",
+                            border: (t) =>
+                              `2px solid ${t.palette.background.paper}`,
+                          },
+                        }}
+                      >
+                        <Avatar
+                          src={u.avatar || undefined}
+                          sx={{ width: 48, height: 48 }}
+                        >
+                          {u.username?.[0]?.toUpperCase()}
+                        </Avatar>
+                      </Badge>
+                    </ListItemAvatar>
+
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        spacing={1}
+                      >
+                        <Typography
+                          noWrap
+                          sx={{
+                            fontSize: "0.9rem",
+                            fontWeight: hasNew ? 800 : 600,
+                          }}
+                        >
+                          {u.username}
+                        </Typography>
+                        {room?.updatedAt && (
+                          <Typography
+                            variant="caption"
+                            color={hasNew ? "primary.main" : "text.secondary"}
+                            sx={{ flexShrink: 0, fontWeight: hasNew ? 700 : 400 }}
+                          >
+                            {formatTime(room.updatedAt)}
+                          </Typography>
+                        )}
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        spacing={1}
+                      >
+                        <Typography
+                          noWrap
+                          sx={{
+                            fontSize: "0.78rem",
+                            color: hasNew ? "text.primary" : "text.secondary",
+                            fontWeight: hasNew ? 700 : 400,
+                          }}
+                        >
+                          {preview}
+                        </Typography>
+                        {hasNew && (
+                          <Box
+                            sx={{
+                              flexShrink: 0,
+                              width: 9,
+                              height: 9,
+                              borderRadius: "50%",
+                              bgcolor: "primary.main",
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          )}
+        </Box>
+      </Box>
+
+      {/* ===== Khu vực chat ===== */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          minWidth: 0,
+        }}
       >
         {selectedUser ? (
           <>
-            <Box p={2} borderBottom="1px solid #ccc">
-              <Typography variant="h6">
-                <span style={{ fontWeight: "bold" }}>Chat with</span>{" "}
-                <span style={{ fontWeight: "bold", color: "#1976d2" }}>
-                  {selectedUser.username}
-                </span>
-              </Typography>
-            </Box>
-            <div
-              ref={scrollRef}
-              className="h-[calc(100vh-250px)] overflow-y-scroll px-5 py-3"
+            {/* Header */}
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              sx={(theme) => ({
+                px: 2.5,
+                py: 1.5,
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                bgcolor: theme.palette.background.paper,
+                flexShrink: 0,
+              })}
             >
-              <Box sx={{ py: 5 }}>
-                {messages.map((msg: any, idx: number) => (
-                  <Box
-                    key={idx}
-                    display="flex"
-                    flexDirection="column"
-                    alignItems={
-                      msg.sender === user?.email ? "flex-end" : "flex-start"
-                    }
-                    mb={0.5}
-                    sx={{ position: "relative" }}
-                  >
-                    {/* bubble */}
-                    <Box
-                      p={msg.type === "image" ? 0.5 : 1.2} // nhỏ hơn padding cho ảnh
-                      borderRadius={2}
-                      bgcolor={
-                        msg.type !== "image" && msg.type !== "images"
-                          ? msg.sender === user?.email
-                            ? "primary.main"
-                            : "grey.200"
-                          : "transparent"
-                      }
-                      color={msg.sender === user?.email ? "white" : "black"}
-                      maxWidth="70%"
-                      onClick={() =>
-                        setSelectedMsg(selectedMsg === msg.id ? null : msg.id)
-                      }
-                      sx={{
-                        cursor: "pointer",
-                        border:
-                          msg.type === "image" || msg.type === "images"
-                            ? "1px solid rgba(214, 214, 214, 0.1)"
-                            : "none",
-                        boxShadow:
-                          msg.type === "image" || msg.type === "images"
-                            ? 1
-                            : "none",
-                      }}
-                    >
-                      {msg.type === "image" ? (
-                        <img
-                          src={msg.text}
-                          alt="shared"
-                          style={{
-                            maxWidth: "150px",
-                            maxHeight: "150px",
-                            borderRadius: "8px",
-                            display: "block",
-                          }}
-                        />
-                      ) : msg.type === "images" ? (
-                        // 🖼️🖼️ Trường hợp nhiều ảnh
-                        <MultiImageSlider images={JSON.parse(msg.text)} />
-                      ) : (
-                        // 💬 Trường hợp text
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            overflowY: "auto",
-                            overflowX: "hidden",
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {msg.text}
-                        </Typography>
-                      )}
+              <Avatar src={selectedUser.avatar || undefined}>
+                {selectedUser.username?.[0]?.toUpperCase()}
+              </Avatar>
+              <Box>
+                <Typography fontWeight={700} lineHeight={1.2}>
+                  {selectedUser.username}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {selectedUser.email}
+                </Typography>
+              </Box>
+            </Stack>
 
-                      {/* hiển thị reaction nếu có */}
-                      {msg.reactions && (
+            {/* Danh sách tin nhắn */}
+            <Box
+              ref={scrollRef}
+              sx={(theme) => ({
+                flex: 1,
+                overflowY: "auto",
+                minHeight: 0,
+                px: { xs: 2, md: 4 },
+                py: 3,
+                scrollbarWidth: "thin",
+                scrollbarColor: `${alpha(
+                  theme.palette.primary.main,
+                  0.5
+                )} transparent`,
+                "&::-webkit-scrollbar": { width: 8 },
+                "&::-webkit-scrollbar-thumb": {
+                  background: alpha(theme.palette.primary.main, 0.4),
+                  borderRadius: 8,
+                },
+                "&::-webkit-scrollbar-track": { background: "transparent" },
+              })}
+            >
+              {messages.length === 0 ? (
+                <Stack
+                  alignItems="center"
+                  justifyContent="center"
+                  spacing={1}
+                  sx={{ height: "100%", color: "text.secondary", textAlign: "center" }}
+                >
+                  <Avatar
+                    src={selectedUser.avatar || undefined}
+                    sx={{ width: 72, height: 72, mb: 1 }}
+                  >
+                    {selectedUser.username?.[0]?.toUpperCase()}
+                  </Avatar>
+                  <Typography fontWeight={700} color="text.primary">
+                    {selectedUser.username}
+                  </Typography>
+                  <Typography variant="body2">
+                    Hãy gửi lời chào để bắt đầu trò chuyện 👋
+                  </Typography>
+                </Stack>
+              ) : (
+                messages.map((msg: any, i: number) => {
+                  const prev = messages[i - 1];
+                  const next = messages[i + 1];
+                  const isOwn = msg.sender === user?.email;
+                  const isImage =
+                    msg.type === "image" || msg.type === "images";
+                  const showDay =
+                    !prev || !isSameDay(prev.createdAt, msg.createdAt);
+                  const lastOfGroup =
+                    !next ||
+                    next.sender !== msg.sender ||
+                    !isSameDay(next.createdAt, msg.createdAt);
+
+                  return (
+                    <Box key={msg.id}>
+                      {/* Ngăn cách theo ngày */}
+                      {showDay && (
                         <Box
-                          sx={{
-                            position: "absolute",
-                            bottom: 8,
-                            right: msg.sender === user?.email ? 0 : "auto",
-                            left: msg.sender === user?.email ? "auto" : 0,
-                            display: "flex",
-                            gap: "3px",
-                            borderRadius: "12px",
-                            px: 0.5,
-                            py: 0.2,
-                          }}
+                          sx={{ display: "flex", justifyContent: "center", my: 2 }}
                         >
-                          {Object.values(msg.reactions).map((emoji: any, i) => (
-                            <span key={i} style={{ fontSize: "0.9rem" }}>
-                              {emoji}
-                            </span>
-                          ))}
+                          <Box
+                            sx={(theme) => ({
+                              px: 1.5,
+                              py: 0.25,
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "text.secondary",
+                              bgcolor:
+                                theme.palette.mode === "light"
+                                  ? theme.palette.grey[100]
+                                  : alpha("#ffffff", 0.08),
+                            })}
+                          >
+                            {formatDayLabel(msg.createdAt)}
+                          </Box>
                         </Box>
                       )}
-                    </Box>
 
-                    {/* popup emoji */}
-                    {selectedMsg === msg.id && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          bottom: -45,
-                          right: msg.sender === user?.email ? 0 : "auto",
-                          left: msg.sender === user?.email ? "auto" : 0,
-                          display: "flex",
-                          gap: "5px",
-                          bgcolor: "white",
-                          borderRadius: "20px",
-                          boxShadow: 3,
-                          px: 1,
-                          py: 0.5,
-                          zIndex: 10,
-                        }}
+                      <Stack
+                        direction="row"
+                        justifyContent={isOwn ? "flex-end" : "flex-start"}
+                        alignItems="flex-end"
+                        spacing={1}
+                        sx={{ mb: lastOfGroup ? 1.5 : 0.4 }}
                       >
-                        {emojis.map((emoji, i) => {
-                          const userKey = user?.email.replace(/\./g, "_");
-                          const currentReaction = msg.reactions?.[userKey];
-
-                          return (
-                            <IconButton
-                              key={i}
-                              onClick={() => handleSelectEmoji(emoji)}
-                              sx={{
-                                bgcolor:
-                                  currentReaction === emoji
-                                    ? "grey.300"
-                                    : "transparent",
-                                borderRadius: "50%",
-                              }}
+                        {/* Avatar người gửi (chỉ ở tin cuối nhóm) */}
+                        {!isOwn &&
+                          (lastOfGroup ? (
+                            <Avatar
+                              src={selectedUser.avatar || undefined}
+                              sx={{ width: 28, height: 28, fontSize: 13 }}
                             >
-                              <span style={{ fontSize: "1.5rem" }}>
-                                {emoji}
-                              </span>
-                            </IconButton>
-                          );
-                        })}
-                      </Box>
-                    )}
+                              {selectedUser.username?.[0]?.toUpperCase()}
+                            </Avatar>
+                          ) : (
+                            <Box sx={{ width: 28, flexShrink: 0 }} />
+                          ))}
 
-                    {/* thời gian */}
-                    <Typography
-                      variant="caption"
-                      sx={{ fontSize: "0.65rem", opacity: 0.6, mt: 1.75 }}
-                    >
-                      {msg.createdAt
-                        ? new Date(msg.createdAt).toLocaleString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
-                        : ""}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </div>
-            <Box p={2} display="flex" gap={1}>
-              <TextField
-                fullWidth
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Type a message..."
-                size="small"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-              />
-              <Button variant="contained" onClick={handleSend}>
-                Send
-              </Button>
+                        <Box
+                          sx={{
+                            position: "relative",
+                            maxWidth: "72%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: isOwn ? "flex-end" : "flex-start",
+                          }}
+                        >
+                          {/* bubble */}
+                          <Box
+                            onClick={() =>
+                              setSelectedMsg(
+                                selectedMsg === msg.id ? null : msg.id
+                              )
+                            }
+                            sx={(theme) => ({
+                              position: "relative",
+                              p: isImage ? 0.5 : "8px 14px",
+                              maxWidth: "100%",
+                              cursor: "pointer",
+                              borderRadius: 3,
+                              ...(isOwn
+                                ? { borderBottomRightRadius: 4 }
+                                : { borderBottomLeftRadius: 4 }),
+                              bgcolor: isImage
+                                ? "transparent"
+                                : isOwn
+                                ? theme.palette.primary.main
+                                : theme.palette.mode === "light"
+                                ? theme.palette.grey[100]
+                                : alpha("#ffffff", 0.08),
+                              color: isOwn
+                                ? theme.palette.primary.contrastText
+                                : theme.palette.text.primary,
+                              border: isImage
+                                ? `1px solid ${theme.palette.divider}`
+                                : "none",
+                              boxShadow: isImage
+                                ? "0 2px 8px rgba(2,6,23,0.12)"
+                                : "none",
+                            })}
+                          >
+                            {msg.type === "image" ? (
+                              <img
+                                src={msg.text}
+                                alt="shared"
+                                style={{
+                                  maxWidth: "180px",
+                                  maxHeight: "180px",
+                                  borderRadius: "8px",
+                                  display: "block",
+                                }}
+                              />
+                            ) : msg.type === "images" ? (
+                              <MultiImageSlider images={JSON.parse(msg.text)} />
+                            ) : (
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  whiteSpace: "pre-wrap",
+                                  wordBreak: "break-word",
+                                }}
+                              >
+                                {msg.text}
+                              </Typography>
+                            )}
+
+                            {/* reaction */}
+                            {msg.reactions && (
+                              <Box
+                                sx={(theme) => ({
+                                  position: "absolute",
+                                  bottom: -10,
+                                  right: isOwn ? 6 : "auto",
+                                  left: isOwn ? "auto" : 6,
+                                  display: "flex",
+                                  gap: "2px",
+                                  bgcolor: theme.palette.background.paper,
+                                  border: `1px solid ${theme.palette.divider}`,
+                                  borderRadius: "12px",
+                                  px: 0.5,
+                                  py: 0.1,
+                                  boxShadow: "0 2px 6px rgba(2,6,23,0.15)",
+                                })}
+                              >
+                                {Object.values(msg.reactions).map(
+                                  (emoji: any, idx) => (
+                                    <span
+                                      key={idx}
+                                      style={{ fontSize: "0.85rem" }}
+                                    >
+                                      {emoji}
+                                    </span>
+                                  )
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* popup chọn emoji */}
+                          {selectedMsg === msg.id && (
+                            <Box
+                              sx={(theme) => ({
+                                position: "absolute",
+                                bottom: -48,
+                                right: isOwn ? 0 : "auto",
+                                left: isOwn ? "auto" : 0,
+                                display: "flex",
+                                gap: "2px",
+                                bgcolor: theme.palette.background.paper,
+                                border: `1px solid ${theme.palette.divider}`,
+                                borderRadius: "999px",
+                                boxShadow: "0 8px 24px rgba(2,6,23,0.2)",
+                                px: 0.5,
+                                py: 0.25,
+                                zIndex: 10,
+                              })}
+                            >
+                              {emojis.map((emoji, idx) => {
+                                const userKey = user?.email.replace(
+                                  /\./g,
+                                  "_"
+                                );
+                                const currentReaction =
+                                  msg.reactions?.[userKey];
+
+                                return (
+                                  <IconButton
+                                    key={idx}
+                                    size="small"
+                                    onClick={() => handleSelectEmoji(emoji)}
+                                    sx={{
+                                      bgcolor:
+                                        currentReaction === emoji
+                                          ? "action.selected"
+                                          : "transparent",
+                                    }}
+                                  >
+                                    <span style={{ fontSize: "1.25rem" }}>
+                                      {emoji}
+                                    </span>
+                                  </IconButton>
+                                );
+                              })}
+                            </Box>
+                          )}
+
+                          {/* thời gian (chỉ ở tin cuối nhóm) */}
+                          {lastOfGroup && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ fontSize: "0.62rem", mt: 0.5, px: 0.5 }}
+                            >
+                              {formatTime(msg.createdAt)}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Stack>
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+
+            {/* Ô nhập */}
+            <Box
+              sx={(theme) => ({
+                p: 1.5,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                bgcolor: theme.palette.background.paper,
+                flexShrink: 0,
+              })}
+            >
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="flex-end"
+                sx={(theme) => ({
+                  p: 0.5,
+                  pl: 2,
+                  borderRadius: 999,
+                  border: `1px solid ${theme.palette.divider}`,
+                  bgcolor:
+                    theme.palette.mode === "light"
+                      ? theme.palette.grey[50]
+                      : alpha("#ffffff", 0.04),
+                  transition: "border-color .15s",
+                  "&:focus-within": {
+                    borderColor: theme.palette.primary.main,
+                  },
+                })}
+              >
+                <TextField
+                  fullWidth
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Nhập tin nhắn..."
+                  variant="standard"
+                  multiline
+                  maxRows={5}
+                  slotProps={{ input: { disableUnderline: true } }}
+                  sx={{ py: 0.75 }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                />
+                <IconButton
+                  onClick={handleSend}
+                  disabled={!text.trim()}
+                  sx={(theme) => ({
+                    bgcolor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
+                    "&:hover": { bgcolor: theme.palette.primary.dark },
+                    "&.Mui-disabled": {
+                      bgcolor: theme.palette.action.disabledBackground,
+                      color: theme.palette.action.disabled,
+                    },
+                  })}
+                >
+                  <Send fontSize="small" />
+                </IconButton>
+              </Stack>
             </Box>
           </>
         ) : (
-          <Box
+          <Stack
             flex={1}
-            display="flex"
-            justifyContent="center"
             alignItems="center"
+            justifyContent="center"
+            spacing={1.5}
+            sx={{ color: "text.secondary", p: 4, textAlign: "center" }}
           >
-            <Typography sx={{ mt: 2 }}>Select a user to chat</Typography>
-          </Box>
+            <ChatBubbleOutline sx={{ fontSize: 56, opacity: 0.4 }} />
+            <Typography fontWeight={600}>Chọn một người để bắt đầu</Typography>
+            <Typography variant="body2">
+              Tin nhắn của bạn sẽ hiển thị ở đây.
+            </Typography>
+          </Stack>
         )}
       </Box>
-    </div>
+    </Box>
   );
 }

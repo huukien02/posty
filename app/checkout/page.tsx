@@ -1,24 +1,62 @@
 "use client";
-import React from "react";
 import {
   Container,
   Box,
   Typography,
-  Grid,
   Card,
-  CardContent,
-  CardActions,
   Button,
+  Chip,
+  Stack,
+  Divider,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import {
+  CheckCircleRounded,
+  BoltRounded,
+  LockRounded,
+} from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { useUser } from "@/hooks/useUser";
 
 // Chỉ để hiển thị; server (lib/stripe.ts) mới là nguồn sự thật về giá & số slot.
 const plans = [
-  { amount: 1, slots: 100 },
-  { amount: 10, slots: 1000 },
-  { amount: 100, slots: 10000 },
-  { amount: 1000, slots: 100000 },
+  {
+    amount: 1,
+    slots: 100,
+    name: "Khởi đầu",
+    desc: "Dùng thử để làm quen",
+    features: ["100 lượt đăng bài", "Lưu trữ vĩnh viễn"],
+  },
+  {
+    amount: 10,
+    slots: 1000,
+    name: "Cơ bản",
+    desc: "Cho người dùng thường xuyên",
+    features: ["1.000 lượt đăng bài", "Lưu trữ vĩnh viễn", "Hỗ trợ qua email"],
+  },
+  {
+    amount: 100,
+    slots: 10000,
+    name: "Chuyên nghiệp",
+    desc: "Tối ưu cho nhà sáng tạo",
+    popular: true,
+    features: [
+      "10.000 lượt đăng bài",
+      "Lưu trữ vĩnh viễn",
+      "Hỗ trợ ưu tiên",
+    ],
+  },
+  {
+    amount: 1000,
+    slots: 100000,
+    name: "Doanh nghiệp",
+    desc: "Dành cho quy mô lớn",
+    features: [
+      "100.000 lượt đăng bài",
+      "Lưu trữ vĩnh viễn",
+      "Hỗ trợ 24/7",
+    ],
+  },
 ];
 
 export default function StripeTestPage() {
@@ -55,76 +93,178 @@ export default function StripeTestPage() {
   if (!user) return null;
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={(theme) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          py: 6,
-          bgcolor: theme.palette.background.default, // theo theme
-        })}
-      >
-        <Container maxWidth="md">
-          <Typography align="center" sx={{ fontWeight: 700, mb: 6 }}>
-            Choose Your Plan
+    <Box sx={{ width: "100%" }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 7 } }}>
+        {/* ===== Heading ===== */}
+        <Stack spacing={1.5} alignItems="center" sx={{ mb: { xs: 4, md: 6 } }}>
+          <Chip
+            icon={<BoltRounded sx={{ fontSize: 18 }} />}
+            label="Nạp lượt đăng bài"
+            color="primary"
+            variant="outlined"
+            sx={{ fontWeight: 700 }}
+          />
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            textAlign="center"
+            sx={{ letterSpacing: "-0.02em" }}
+          >
+            Chọn gói phù hợp với bạn
           </Typography>
+          <Typography
+            color="text.secondary"
+            textAlign="center"
+            sx={{ maxWidth: 520 }}
+          >
+            Mua thêm lượt đăng bài cho tài khoản. Thanh toán một lần, dùng
+            không giới hạn thời gian.
+          </Typography>
+        </Stack>
 
-          <Grid container spacing={4}>
-            {plans.map((plan) => (
+        {/* ===== Bảng giá ===== */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              lg: "repeat(4, 1fr)",
+            },
+            gap: 3,
+            alignItems: "stretch",
+          }}
+        >
+          {plans.map((plan) => {
+            const popular = !!plan.popular;
+            return (
               <Card
                 key={plan.amount}
+                elevation={0}
                 sx={(theme) => ({
-                  width: { xs: "100%", sm: 220 },
-                  textAlign: "center",
-                  py: 4,
-                  px: 2,
-                  borderRadius: 3,
-                  bgcolor: theme.palette.background.paper, // nền theo theme
-                  boxShadow: theme.shadows[3],
-                  transition: "transform 0.3s, box-shadow 0.3s",
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  p: 3,
+                  borderRadius: 4,
+                  overflow: "visible",
+                  border: popular
+                    ? `2px solid ${theme.palette.primary.main}`
+                    : `1px solid ${theme.palette.divider}`,
+                  boxShadow: popular
+                    ? `0 18px 40px ${alpha(theme.palette.primary.main, 0.25)}`
+                    : "0 1px 2px rgba(16,24,40,0.04), 0 10px 24px rgba(16,24,40,0.05)",
+                  transition: "transform .25s, box-shadow .25s",
                   "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: theme.shadows[6],
+                    transform: "translateY(-6px)",
+                    boxShadow: `0 22px 48px ${alpha(
+                      theme.palette.primary.main,
+                      popular ? 0.3 : 0.16
+                    )}`,
                   },
                 })}
               >
-                <CardContent>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    ${plan.amount}
+                {popular && (
+                  <Chip
+                    label="Phổ biến nhất"
+                    color="primary"
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: -13,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      fontWeight: 700,
+                      boxShadow: 2,
+                    }}
+                  />
+                )}
+
+                <Typography variant="overline" color="text.secondary">
+                  {plan.name}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2, minHeight: 40 }}
+                >
+                  {plan.desc}
+                </Typography>
+
+                {/* Giá */}
+                <Stack direction="row" alignItems="baseline" spacing={0.5}>
+                  <Typography variant="h6" color="text.secondary">
+                    $
                   </Typography>
                   <Typography
-                    variant="subtitle1"
-                    sx={{ mt: 1, color: "text.secondary" }}
+                    variant="h3"
+                    fontWeight={800}
+                    sx={{ letterSpacing: "-0.03em", lineHeight: 1 }}
                   >
-                    +{plan.slots} slots
+                    {plan.amount.toLocaleString()}
                   </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: "center" }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => handleCheckout(plan.amount)}
-                    sx={{
-                      borderRadius: 2,
-                      px: 4,
-                      py: 1.5,
-                      fontWeight: 600,
-                      textTransform: "none",
-                      transition: "all 0.3s",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    Pay ${plan.amount}
-                  </Button>
-                </CardActions>
+                  <Typography color="text.secondary">/ lần</Typography>
+                </Stack>
+
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  alignItems="center"
+                  sx={{ mt: 1.5 }}
+                >
+                  <BoltRounded sx={{ color: "primary.main", fontSize: 20 }} />
+                  <Typography fontWeight={700}>
+                    +{plan.slots.toLocaleString()} lượt
+                  </Typography>
+                </Stack>
+
+                <Divider sx={{ my: 2.5 }} />
+
+                {/* Tính năng */}
+                <Stack spacing={1.25} sx={{ flexGrow: 1, mb: 3 }}>
+                  {plan.features.map((f) => (
+                    <Stack
+                      key={f}
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                    >
+                      <CheckCircleRounded
+                        sx={{ fontSize: 18, color: "success.main" }}
+                      />
+                      <Typography variant="body2">{f}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+
+                <Button
+                  fullWidth
+                  size="large"
+                  variant={popular ? "contained" : "outlined"}
+                  onClick={() => handleCheckout(plan.amount)}
+                  sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
+                >
+                  Chọn gói này
+                </Button>
               </Card>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-    </Container>
+            );
+          })}
+        </Box>
+
+        {/* ===== Ghi chú bảo mật ===== */}
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ mt: 5, color: "text.secondary" }}
+        >
+          <LockRounded sx={{ fontSize: 18 }} />
+          <Typography variant="body2">
+            Thanh toán an toàn & mã hoá qua Stripe
+          </Typography>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

@@ -18,17 +18,22 @@ const ClientLayout = ({ children }: Props) => {
         sx={(theme) => ({
           display: "flex",
           flexDirection: "column",
-          minHeight: "100vh",
+          height: "100dvh",
+          overflow: "hidden",
           bgcolor: theme.palette.background.default,
           color: theme.palette.text.primary,
         })}
       >
         <Header />
+        {/* Vùng nội dung: cuộn nội bộ, Header/Footer luôn hiển thị */}
         <Box
+          component="main"
           sx={{
             flex: 1,
-            display: "flex",
             minHeight: 0,
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {children}

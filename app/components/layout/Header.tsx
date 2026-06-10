@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { alpha } from "@mui/material/styles";
 import {
   AppBar,
   Toolbar,
@@ -12,6 +13,7 @@ import {
   Menu,
   MenuItem,
   Badge,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -40,6 +42,13 @@ const Header = () => {
   const [hasFriendRequest, setHasFriendRequest] = useState(false);
 
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Xác định tab đang active theo route hiện tại
+  const isActive = (href?: string) => {
+    if (!href) return false;
+    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  };
 
   const loadUser = () => {
     const storedUser = localStorage.getItem("user");
@@ -233,7 +242,15 @@ const Header = () => {
       ];
 
   return (
-    <AppBar position="static" color="primary">
+    <AppBar
+      position="static"
+      elevation={0}
+      sx={(theme) => ({
+        bgcolor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      })}
+    >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography
           onClick={() => router.push("/")}
@@ -245,6 +262,7 @@ const Header = () => {
             display: "flex",
             alignItems: "center",
             gap: 1,
+            color: "primary.main",
           }}
         >
           <Image src="/favicon.ico" alt="Logo" width={32} height={32} /> Posty
@@ -258,22 +276,49 @@ const Header = () => {
             alignItems: "center",
           }}
         >
-          {menuItems.map((item) =>
-            item.href ? (
+          {menuItems.map((item) => {
+            const active = isActive(item.href);
+            const activeSx = {
+              borderRadius: 2,
+              fontWeight: active ? 700 : 500,
+              color: active ? "primary.main" : "inherit",
+              bgcolor: active
+                ? (theme: any) => alpha(theme.palette.primary.main, 0.12)
+                : "transparent",
+              "&:hover": {
+                bgcolor: (theme: any) =>
+                  alpha(theme.palette.primary.main, active ? 0.18 : 0.08),
+                color: "primary.main",
+              },
+            };
+            return item.href ? (
               <Button
                 key={item.label}
                 color="inherit"
                 href={item.href}
                 startIcon={item.icon}
+                sx={activeSx}
               >
                 {item.label}
               </Button>
             ) : (
-              <Button key={item.label} color="inherit" onClick={item.onClick}>
+              <Button
+                key={item.label}
+                color="inherit"
+                onClick={item.onClick}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    bgcolor: (theme) =>
+                      alpha(theme.palette.error.main, 0.1),
+                    color: "error.main",
+                  },
+                }}
+              >
                 {item.label}
               </Button>
-            )
-          )}
+            );
+          })}
           <ToggleThemeButton />
         </Box>
 
@@ -286,26 +331,82 @@ const Header = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            slotProps={{
+              paper: {
+                sx: {
+                  minWidth: 200,
+                  borderRadius: 2,
+                  mt: 1,
+                  p: 0.5,
+                  "& .MuiMenuItem-root": {
+                    borderRadius: 1.5,
+                    minHeight: 42,
+                  },
+                },
+              },
+            }}
           >
-            {menuItems.map((item) =>
-              item.href ? (
+            {menuItems.map((item) => {
+              const active = isActive(item.href);
+              return item.href ? (
                 <MenuItem
                   key={item.label}
                   onClick={handleMenuClose}
                   component="a"
                   href={item.href}
+                  selected={active}
+                  sx={{
+                    color: active ? "primary.main" : "inherit",
+                    fontWeight: active ? 700 : 500,
+                    "&.Mui-selected": {
+                      bgcolor: (theme) =>
+                        alpha(theme.palette.primary.main, 0.12),
+                      "&:hover": {
+                        bgcolor: (theme) =>
+                          alpha(theme.palette.primary.main, 0.18),
+                      },
+                    },
+                  }}
                 >
                   {item.icon}
-                  <Typography sx={{ ml: 1 }}>{item.label}</Typography>
+                  <Typography sx={{ ml: item.icon ? 1 : 0, fontWeight: "inherit" }}>
+                    {item.label}
+                  </Typography>
                 </MenuItem>
               ) : (
-                <MenuItem key={item.label} onClick={item.onClick}>
+                <MenuItem
+                  key={item.label}
+                  onClick={item.onClick}
+                  sx={{
+                    color: "error.main",
+                    fontWeight: 600,
+                    "&:hover": {
+                      bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
+                    },
+                  }}
+                >
                   {item.label}
                 </MenuItem>
-              )
-            )}
+              );
+            })}
 
-            <ToggleThemeButton />
+            <Divider sx={{ my: 0.5 }} />
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                pl: 2,
+                pr: 0.5,
+                py: 0.5,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Giao diện
+              </Typography>
+              <ToggleThemeButton />
+            </Box>
           </Menu>
         </Box>
       </Toolbar>

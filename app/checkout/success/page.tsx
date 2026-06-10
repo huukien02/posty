@@ -2,7 +2,21 @@
 
 // app/checkout/success/page.tsx
 import { useEffect, useState } from "react";
-import { Container, Typography, Box, Button } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Paper,
+  Stack,
+  CircularProgress,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import {
+  CheckCircleRounded,
+  ErrorOutlineRounded,
+  BoltRounded,
+} from "@mui/icons-material";
 import Link from "next/link";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase.config";
@@ -85,34 +99,122 @@ export default function CheckoutSuccessPage() {
     }
   };
 
+  const title =
+    status === "success"
+      ? "Thanh toán thành công!"
+      : status === "error"
+      ? "Đang xử lý giao dịch"
+      : "Đang xác nhận thanh toán...";
+
   return (
-    <Container maxWidth="sm">
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        minHeight="100vh"
-        gap={3}
-      >
-        <Typography variant="h5" fontWeight="bold">
-          {status === "success"
-            ? "🎉 Thanh toán thành công!"
-            : status === "error"
-              ? "⚠️ Đang xử lý"
-              : "⏳ Đang xác nhận..."}
-        </Typography>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+        py: { xs: 6, md: 10 },
+      }}
+    >
+      <Container maxWidth="xs" disableGutters>
+        <Paper
+          elevation={0}
+          sx={(theme) => ({
+            p: { xs: 3, md: 4 },
+            borderRadius: 4,
+            textAlign: "center",
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: "0 12px 40px rgba(2,6,23,0.10)",
+          })}
+        >
+          {/* Icon trạng thái */}
+          <Box
+            sx={(theme) => {
+              const color =
+                status === "success"
+                  ? theme.palette.success.main
+                  : status === "error"
+                  ? theme.palette.warning.main
+                  : theme.palette.primary.main;
+              return {
+                width: 84,
+                height: 84,
+                borderRadius: "50%",
+                mx: "auto",
+                mb: 2.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: alpha(color, 0.12),
+                color,
+              };
+            }}
+          >
+            {status === "loading" ? (
+              <CircularProgress size={36} />
+            ) : status === "success" ? (
+              <CheckCircleRounded sx={{ fontSize: 48 }} />
+            ) : (
+              <ErrorOutlineRounded sx={{ fontSize: 48 }} />
+            )}
+          </Box>
 
-        <Typography variant="body1" align="center">
-          {renderMessage()}
-        </Typography>
+          <Typography variant="h5" fontWeight={800} gutterBottom>
+            {title}
+          </Typography>
 
-        <Link href="/" passHref>
-          <Button variant="contained" color="primary">
-            Quay về trang chủ
-          </Button>
-        </Link>
-      </Box>
-    </Container>
+          <Typography variant="body2" color="text.secondary">
+            {renderMessage()}
+          </Typography>
+
+          {/* Số dư lượt sau khi thành công */}
+          {status === "success" && postsRemaining !== null && (
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              justifyContent="center"
+              sx={(theme) => ({
+                mt: 3,
+                py: 1.5,
+                borderRadius: 3,
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+              })}
+            >
+              <BoltRounded sx={{ color: "primary.main" }} />
+              <Typography>
+                Số lượt hiện tại:{" "}
+                <strong>{postsRemaining.toLocaleString()}</strong>
+              </Typography>
+            </Stack>
+          )}
+
+          <Stack spacing={1.5} sx={{ mt: 4 }}>
+            <Button
+              component={Link}
+              href="/"
+              variant="contained"
+              size="large"
+              fullWidth
+              sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
+            >
+              Quay về trang chủ
+            </Button>
+            {status === "error" && (
+              <Button
+                component={Link}
+                href="/checkout"
+                variant="outlined"
+                size="large"
+                fullWidth
+                sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
+              >
+                Thử lại
+              </Button>
+            )}
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

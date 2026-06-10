@@ -15,16 +15,27 @@ import {
 import {
   Avatar,
   Button,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   Typography,
   Box,
   TextField,
+  Container,
+  Paper,
+  Stack,
+  Chip,
+  InputAdornment,
+  CircularProgress,
 } from "@mui/material";
+import {
+  PersonAddAlt1,
+  Group,
+  MarkEmailReadOutlined,
+  SendOutlined,
+  Search as SearchIcon,
+  PersonRemove,
+  Check,
+  Close,
+} from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import { useUser } from "@/hooks/useUser";
 import { db } from "@/lib/firebase.config";
 
@@ -96,11 +107,6 @@ export default function FriendPage() {
   };
 
   // 📌 Hủy bạn hoặc từ chối lời mời
-  // const removeFriendship = async (friendshipId: string) => {
-  //   await deleteDoc(doc(db, "friendships", friendshipId));
-  //   fetchFriendships();
-  // };
-
   const removeFriendship = async (friendshipId: string) => {
     try {
       setLoadingRemoveId(friendshipId);
@@ -146,311 +152,391 @@ export default function FriendPage() {
   if (!user) return null;
 
   return (
-    <div className="h-full w-full flex flex-col sm:flex-row gap-4 py-4 px-8 justify-center">
-      <div className="w-full sm:w-[30%] h-full">
-        {/* 🌍 Người dùng khác */}
-        <Card variant="outlined">
-          <CardContent>
-            <Typography variant="h6" fontWeight={"bold"} gutterBottom>
-              Bạn bè đề xuất
-            </Typography>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 }, width: "100%" }}>
+      {/* ===== Tiêu đề trang ===== */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight={800}>
+          Bạn bè 👥
+        </Typography>
+        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+          Kết nối, quản lý lời mời và mở rộng cộng đồng của bạn.
+        </Typography>
+      </Box>
 
-            {/* ✅ Ô tìm kiếm */}
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Tìm theo tên người dùng..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{ mb: 2 }}
-            />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "minmax(0, 1fr) minmax(0, 1.35fr)",
+          },
+          gap: 3,
+          alignItems: "start",
+        }}
+      >
+        {/* ===== Gợi ý kết bạn ===== */}
+        <SectionCard
+          icon={<PersonAddAlt1 sx={{ color: "primary.main" }} />}
+          title="Gợi ý kết bạn"
+          count={filteredUsers.length}
+          sx={{ position: { md: "sticky" }, top: 24 }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Tìm theo email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      fontSize="small"
+                      sx={{ color: "text.secondary" }}
+                    />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
 
-            {filteredUsers.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                Không tìm thấy người dùng
-              </Typography>
-            ) : (
-              <Box
-                sx={(theme) => ({
-                  height: 400,
-                  overflowY: "auto",
-                  bgcolor: theme.palette.background.paper,
-                  color: theme.palette.text.primary,
-                  pr: 1,
-                  "&::-webkit-scrollbar": {
-                    width: 8,
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor:
-                      theme.palette.mode === "dark"
-                        ? theme.palette.grey[700]
-                        : theme.palette.grey[400],
-                    borderRadius: 4,
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    backgroundColor:
-                      theme.palette.mode === "dark"
-                        ? theme.palette.background.default
-                        : theme.palette.grey[200],
-                  },
-                })}
-              >
-                {filteredUsers.map((u) => {
-                  const status = requestStatus[u.email];
-
-                  return (
-                    <ListItem key={u.id} divider>
-                      <ListItemAvatar>
-                        <Avatar src={u.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText primary={u.username} secondary={u.email} />
-                      <Button
-                        size="small"
-                        variant="contained"
-                        disabled={status === "loading" || status === "sent"}
-                        onClick={async () => {
+          {filteredUsers.length === 0 ? (
+            <EmptyState text="Không tìm thấy người dùng" />
+          ) : (
+            <Stack
+              spacing={0.5}
+              sx={(theme) => ({
+                maxHeight: 440,
+                overflowY: "auto",
+                mx: -0.5,
+                px: 0.5,
+                scrollbarWidth: "thin",
+                scrollbarColor: `${alpha(
+                  theme.palette.primary.main,
+                  0.6
+                )} transparent`,
+                "&::-webkit-scrollbar": { width: 8 },
+                "&::-webkit-scrollbar-thumb": {
+                  background: alpha(theme.palette.primary.main, 0.5),
+                  borderRadius: 8,
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  background: theme.palette.primary.main,
+                },
+                "&::-webkit-scrollbar-track": { background: "transparent" },
+              })}
+            >
+              {filteredUsers.map((u) => {
+                const status = requestStatus[u.email];
+                return (
+                  <FriendRow key={u.id} person={u}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      startIcon={
+                        status === "sent" ? <Check /> : <PersonAddAlt1 />
+                      }
+                      disabled={status === "loading" || status === "sent"}
+                      sx={{ borderRadius: 2, flexShrink: 0 }}
+                      onClick={async () => {
+                        setRequestStatus((prev) => ({
+                          ...prev,
+                          [u.email]: "loading",
+                        }));
+                        try {
+                          await sendRequest(u.email);
                           setRequestStatus((prev) => ({
                             ...prev,
-                            [u.email]: "loading",
+                            [u.email]: "sent",
                           }));
-                          try {
-                            await sendRequest(u.email);
-                            setRequestStatus((prev) => ({
-                              ...prev,
-                              [u.email]: "sent",
-                            }));
-                          } catch {
-                            setRequestStatus((prev) => {
-                              const updated = { ...prev };
-                              delete updated[u.email];
-                              return updated;
-                            });
-                          }
-                        }}
-                      >
-                        {status === "loading"
-                          ? "Đang gửi..."
-                          : status === "sent"
-                          ? "Đã gửi"
-                          : "Kết bạn"}
-                      </Button>
-                    </ListItem>
-                  );
-                })}
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-      <div className="w-full sm:w-[60%]">
-        {/* ✅ Bạn bè */}
-        <Card variant="outlined" sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" fontWeight={"bold"} gutterBottom>
-              Bạn bè
-            </Typography>
+                        } catch {
+                          setRequestStatus((prev) => {
+                            const updated = { ...prev };
+                            delete updated[u.email];
+                            return updated;
+                          });
+                        }
+                      }}
+                    >
+                      {status === "loading"
+                        ? "Đang gửi"
+                        : status === "sent"
+                        ? "Đã gửi"
+                        : "Kết bạn"}
+                    </Button>
+                  </FriendRow>
+                );
+              })}
+            </Stack>
+          )}
+        </SectionCard>
+
+        {/* ===== Cột phải ===== */}
+        <Stack spacing={3}>
+          {/* Bạn bè */}
+          <SectionCard
+            icon={<Group sx={{ color: "#10b981" }} />}
+            title="Bạn bè"
+            count={friends.length}
+          >
             {friends.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                Chưa có bạn bè
-              </Typography>
+              <EmptyState text="Chưa có bạn bè" />
             ) : (
-              <List>
+              <Stack spacing={0.5}>
                 {friends.map((f) => {
                   const friendEmail =
                     f.from === currentUserEmail ? f.to : f.from;
                   const friend = users.find((u) => u.email === friendEmail);
                   if (!friend) return null;
                   return (
-                    <ListItem key={f.id} divider>
-                      <ListItemAvatar>
-                        <Avatar src={friend.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={friend.username}
-                        secondary={friend.email}
-                      />
+                    <FriendRow key={f.id} person={friend}>
                       <Button
                         size="small"
                         variant="outlined"
                         color="error"
+                        startIcon={<PersonRemove />}
                         disabled={loadingRemoveId === f.id}
+                        sx={{ borderRadius: 2, flexShrink: 0 }}
                         onClick={() => removeFriendship(f.id)}
                       >
                         Xóa bạn
                       </Button>
-                    </ListItem>
+                    </FriendRow>
                   );
                 })}
-              </List>
+              </Stack>
             )}
-          </CardContent>
-        </Card>
+          </SectionCard>
 
-        {/* 📩 Lời mời đến */}
-        <Card variant="outlined" sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" fontWeight={"bold"} gutterBottom>
-              Lời mời kết bạn
-            </Typography>
+          {/* Lời mời đến */}
+          <SectionCard
+            icon={<MarkEmailReadOutlined sx={{ color: "primary.main" }} />}
+            title="Lời mời kết bạn"
+            count={friendRequests.length}
+          >
             {friendRequests.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                Không có lời mời nào
-              </Typography>
+              <EmptyState text="Không có lời mời nào" />
             ) : (
-              <List>
-                {/* {friendRequests.map((f) => {
-                  const sender = users.find((u) => u.email === f.from);
-                  if (!sender) return null;
-                  return (
-                    <ListItem key={f.id} divider>
-                      <ListItemAvatar>
-                        <Avatar src={sender.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={sender.username}
-                        secondary={sender.email}
-                      />
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="success"
-                        onClick={() => acceptRequest(f.id)}
-                        sx={{ mr: 1, ml: 2 }}
-                      >
-                        Chấp nhận
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => removeFriendship(f.id)}
-                      >
-                        Từ chối
-                      </Button>
-                    </ListItem>
-                  );
-                })} */}
+              <Stack spacing={0.5}>
                 {friendRequests.map((f) => {
                   const sender = users.find((u) => u.email === f.from);
                   if (!sender) return null;
-
                   const status = requestActionStatus[f.id];
+                  const busy = status === "loading" || status === "done";
 
                   return (
-                    <ListItem key={f.id} divider>
-                      <ListItemAvatar>
-                        <Avatar src={sender.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={sender.username}
-                        secondary={sender.email}
-                      />
-
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="success"
-                        sx={{ mr: 1, ml: 2 }}
-                        disabled={status === "loading" || status === "done"}
-                        onClick={async () => {
-                          setRequestActionStatus((prev) => ({
-                            ...prev,
-                            [f.id]: "loading",
-                          }));
-                          try {
-                            await acceptRequest(f.id);
+                    <FriendRow key={f.id} person={sender}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ flexShrink: 0 }}
+                      >
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          startIcon={<Check />}
+                          disabled={busy}
+                          sx={{ borderRadius: 2 }}
+                          onClick={async () => {
                             setRequestActionStatus((prev) => ({
                               ...prev,
-                              [f.id]: "done",
+                              [f.id]: "loading",
                             }));
-                          } catch {
-                            setRequestActionStatus((prev) => {
-                              const copy = { ...prev };
-                              delete copy[f.id];
-                              return copy;
-                            });
-                          }
-                        }}
-                      >
-                        {status === "loading" ? "Đang xử lý..." : "Chấp nhận"}
-                      </Button>
-
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        disabled={status === "loading" || status === "done"}
-                        onClick={async () => {
-                          setRequestActionStatus((prev) => ({
-                            ...prev,
-                            [f.id]: "loading",
-                          }));
-                          try {
-                            await removeFriendship(f.id);
+                            try {
+                              await acceptRequest(f.id);
+                              setRequestActionStatus((prev) => ({
+                                ...prev,
+                                [f.id]: "done",
+                              }));
+                            } catch {
+                              setRequestActionStatus((prev) => {
+                                const copy = { ...prev };
+                                delete copy[f.id];
+                                return copy;
+                              });
+                            }
+                          }}
+                        >
+                          {status === "loading" ? "..." : "Chấp nhận"}
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          startIcon={<Close />}
+                          disabled={busy}
+                          sx={{ borderRadius: 2 }}
+                          onClick={async () => {
                             setRequestActionStatus((prev) => ({
                               ...prev,
-                              [f.id]: "done",
+                              [f.id]: "loading",
                             }));
-                          } catch {
-                            setRequestActionStatus((prev) => {
-                              const copy = { ...prev };
-                              delete copy[f.id];
-                              return copy;
-                            });
-                          }
-                        }}
-                      >
-                        {status === "loading" ? "Đang xử lý..." : "Từ chối"}
-                      </Button>
-                    </ListItem>
+                            try {
+                              await removeFriendship(f.id);
+                              setRequestActionStatus((prev) => ({
+                                ...prev,
+                                [f.id]: "done",
+                              }));
+                            } catch {
+                              setRequestActionStatus((prev) => {
+                                const copy = { ...prev };
+                                delete copy[f.id];
+                                return copy;
+                              });
+                            }
+                          }}
+                        >
+                          Từ chối
+                        </Button>
+                      </Stack>
+                    </FriendRow>
                   );
                 })}
-              </List>
+              </Stack>
             )}
-          </CardContent>
-        </Card>
+          </SectionCard>
 
-        {/* 📤 Lời mời đã gửi */}
-        <Card variant="outlined" sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" fontWeight={"bold"} gutterBottom>
-              Lời mời đã gửi
-            </Typography>
+          {/* Lời mời đã gửi */}
+          <SectionCard
+            icon={<SendOutlined sx={{ color: "#f59e0b" }} />}
+            title="Lời mời đã gửi"
+            count={sentRequests.length}
+          >
             {sentRequests.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                Bạn chưa gửi lời mời nào
-              </Typography>
+              <EmptyState text="Bạn chưa gửi lời mời nào" />
             ) : (
-              <List>
+              <Stack spacing={0.5}>
                 {sentRequests.map((f) => {
                   const receiver = users.find((u) => u.email === f.to);
                   if (!receiver) return null;
                   return (
-                    <ListItem key={f.id} divider>
-                      <ListItemAvatar>
-                        <Avatar src={receiver.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={receiver.username}
-                        secondary={receiver.email}
+                    <FriendRow key={f.id} person={receiver}>
+                      <Chip
+                        size="small"
+                        label="Đang chờ"
+                        sx={{ mr: 1, flexShrink: 0 }}
                       />
                       <Button
                         size="small"
                         variant="outlined"
                         color="error"
                         disabled={loadingRemoveId === f.id}
+                        sx={{ borderRadius: 2, flexShrink: 0 }}
                         onClick={() => removeFriendship(f.id)}
                       >
-                        Huỷ lời mời
+                        {loadingRemoveId === f.id ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          "Huỷ"
+                        )}
                       </Button>
-                    </ListItem>
+                    </FriendRow>
                   );
                 })}
-              </List>
+              </Stack>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </SectionCard>
+        </Stack>
+      </Box>
+    </Container>
+  );
+}
+
+/* ---------- Sub-components ---------- */
+
+function SectionCard({
+  icon,
+  title,
+  count,
+  children,
+  sx,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count?: number;
+  children: React.ReactNode;
+  sx?: object;
+}) {
+  return (
+    <Paper
+      elevation={0}
+      sx={[
+        (theme) => ({
+          p: { xs: 2, md: 2.5 },
+          borderRadius: 4,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow:
+            theme.palette.mode === "light"
+              ? "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.04)"
+              : "none",
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        {icon}
+        <Typography variant="subtitle1" fontWeight={700}>
+          {title}
+        </Typography>
+        {typeof count === "number" && (
+          <Chip
+            label={count}
+            size="small"
+            color="primary"
+            variant="outlined"
+            sx={{ height: 22, fontWeight: 700 }}
+          />
+        )}
+      </Stack>
+      {children}
+    </Paper>
+  );
+}
+
+function FriendRow({
+  person,
+  children,
+}: {
+  person: any;
+  children: React.ReactNode;
+}) {
+  return (
+    <Stack
+      direction="row"
+      spacing={1.5}
+      alignItems="center"
+      sx={{
+        p: 1,
+        borderRadius: 2.5,
+        transition: "background-color .15s",
+        "&:hover": { bgcolor: "action.hover" },
+      }}
+    >
+      <Avatar src={person?.avatar} sx={{ width: 44, height: 44 }}>
+        {person?.username?.[0]?.toUpperCase()}
+      </Avatar>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography fontWeight={600} noWrap fontSize={14}>
+          {person?.username}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" noWrap fontSize={12}>
+          {person?.email}
+        </Typography>
+      </Box>
+      {children}
+    </Stack>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <Box sx={{ py: 3, textAlign: "center" }}>
+      <Typography variant="body2" color="text.secondary">
+        {text}
+      </Typography>
+    </Box>
   );
 }
