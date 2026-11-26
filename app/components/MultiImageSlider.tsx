@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, IconButton } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
@@ -22,8 +23,9 @@ export function MultiImageSlider({ images }: { images: string[] }) {
         position: "relative",
         width: 150,
         height: 150,
-        borderRadius: "8px",
+        borderRadius: "12px",
         overflow: "hidden",
+        bgcolor: "action.hover",
       }}
     >
       <img
@@ -33,7 +35,7 @@ export function MultiImageSlider({ images }: { images: string[] }) {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          borderRadius: "8px",
+          display: "block",
         }}
       />
 
@@ -47,9 +49,12 @@ export function MultiImageSlider({ images }: { images: string[] }) {
               top: "50%",
               left: 0,
               transform: "translateY(-50%)",
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.3)",
-              "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
+              m: 0.5,
+              borderRadius: "50%",
+              color: "common.white",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              "& svg": { fontSize: 12 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -63,9 +68,12 @@ export function MultiImageSlider({ images }: { images: string[] }) {
               top: "50%",
               right: 0,
               transform: "translateY(-50%)",
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.3)",
-              "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
+              m: 0.5,
+              borderRadius: "50%",
+              color: "common.white",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              "& svg": { fontSize: 12 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowForwardIosIcon fontSize="small" />

@@ -14,6 +14,7 @@ import {
   alpha,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -106,16 +107,15 @@ export default function PostAddToCollectionDialog({
 
   return (
     <>
-      <Tooltip
-        sx={(theme) => ({
-          bgcolor: alpha(theme.palette.background.paper, 0.7),
-          "&:hover": {
-            bgcolor: alpha(theme.palette.background.paper, 0.9),
-          },
-        })}
-        title="Thêm vào bộ sưu tập"
-      >
+      <Tooltip title="Thêm vào bộ sưu tập">
         <IconButton
+          sx={(theme) => ({
+            bgcolor: alpha(theme.palette.background.paper, 0.85),
+            backdropFilter: "blur(4px)",
+            "&:hover": {
+              bgcolor: alpha(theme.palette.background.paper, 0.95),
+            },
+          })}
           onClick={(e) => {
             e.stopPropagation();
             setOpen(true);
@@ -151,26 +151,20 @@ export default function PostAddToCollectionDialog({
                     key={col.id}
                     onClick={() => handleTogglePostInCollection(col)}
                     sx={(theme) => ({
+                      border: `1px solid ${
+                        isInCollection ? theme.palette.primary.main : theme.palette.divider
+                      }`,
                       bgcolor: isInCollection
-                        ? theme.palette.mode === "light"
-                          ? theme.palette.primary.main 
-                          : "#000000ff"
-                        : theme.palette.mode === "light"
-                        ? "transparent"
-                        : "#353535ff",
+                        ? alpha(theme.palette.primary.main, 0.1)
+                        : "transparent",
                       color: isInCollection
-                        ? theme.palette.common.white
+                        ? theme.palette.primary.main
                         : theme.palette.text.primary,
-                      borderRadius: 2,
-                      mb: 0.5,
+                      mb: 1,
                       "&:hover": {
                         bgcolor: isInCollection
-                          ? theme.palette.mode === "light"
-                            ? theme.palette.primary.dark // hover xanh nếu light
-                            : "#333333" // hover đen nhạt nếu dark
-                          : theme.palette.mode === "light"
-                          ? theme.palette.action.hover
-                          : "#333333",
+                          ? alpha(theme.palette.primary.main, 0.16)
+                          : theme.palette.action.hover,
                       },
                     })}
                   >
@@ -183,12 +177,10 @@ export default function PostAddToCollectionDialog({
                           ? `${col.postIds.length} bài viết`
                           : "Chưa có bài viết"
                       }
-                      secondaryTypographyProps={{
-                        color: isInCollection
-                          ? "rgba(255,255,255,0.8)"
-                          : "text.secondary",
-                      }}
+                      primaryTypographyProps={{ fontWeight: 600, fontSize: 14 }}
+                      secondaryTypographyProps={{ color: "text.secondary", fontSize: 12 }}
                     />
+                    {isInCollection && <CheckCircle fontSize="small" color="primary" />}
                   </ListItemButton>
                 );
               })}

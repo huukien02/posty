@@ -15,6 +15,9 @@ import {
 } from "firebase/firestore";
 import { Box, TextField, Button, Typography, Avatar } from "@mui/material";
 import Image from "next/image";
+import { alpha } from "@mui/material/styles";
+import { AddPhotoAlternateOutlined, DeleteOutline } from "@mui/icons-material";
+import { radius } from "@/app/lib/theme";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "react-toastify";
 
@@ -132,134 +135,99 @@ export default function PostForm({ userId, onPostAdded }: PostFormProps) {
   return (
     <Box
       sx={{
+        width: "100%",
         maxWidth: 600,
         mx: "auto",
-        p: 3,
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        pt: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
       }}
     >
       {/* Header với Avatar */}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <Avatar
           src={user?.avatar || undefined}
           alt={user?.username || "User"}
-          sx={{ width: 48, height: 48, mr: 2 }}
+          sx={{ width: 40, height: 40 }}
         />
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: "bold",
-            color: "text.primary",
-          }}
-        >
+        <Typography variant="subtitle1" color="text.primary">
           {user?.username || "Bạn"}
         </Typography>
       </Box>
 
       {/* Title bài viết */}
       <TextField
+        label="Tiêu đề"
         placeholder="Bạn đang nghĩ gì?"
         fullWidth
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        sx={{
-          mb: 1,
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 3,
-            padding: "4px 12px",
-            minHeight: 40,
-            "& fieldset": {
-              borderColor: "grey.400",
-            },
-            "&:hover fieldset": {
-              borderColor: "primary.main",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "primary.main",
-              boxShadow: "0 0 8px rgba(25,118,210,0.2)",
-            },
-          },
-          "& .MuiInputBase-input": {
-            padding: "6px 0",
-          },
-        }}
         variant="outlined"
       />
 
       {/* Description bài viết */}
       <TextField
-        placeholder="Nội dung bài viết..."
+        label="Nội dung"
+        placeholder="Chia sẻ thêm chi tiết…"
         fullWidth
         multiline
-        rows={2}
+        rows={3}
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        sx={{
-          mb: 2,
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 3,
-            "& fieldset": {
-              borderColor: "grey.400",
-            },
-            "&:hover fieldset": {
-              borderColor: "primary.main",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "primary.main",
-              boxShadow: "0 0 8px rgba(25,118,210,0.2)",
-            },
-          },
-        }}
         variant="outlined"
       />
 
       {/* Upload ảnh */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          variant="outlined"
+      <Box>
+        <Box
           component="label"
-          sx={{
-            mb: 2,
-            borderRadius: 3,
-            border: "2px dashed",
-            borderColor: "primary.main",
-            color: "primary.main",
+          sx={(theme) => ({
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            py: 3,
+            px: 2,
+            borderRadius: `${radius.md}px`,
+            border: `1.5px dashed ${theme.palette.divider}`,
+            bgcolor: "action.hover",
+            color: "text.secondary",
+            cursor: "pointer",
+            textAlign: "center",
+            transition: "border-color .15s, background-color .15s",
             "&:hover": {
-              background: "rgba(25,118,210,0.1)",
-              borderColor: "primary.main",
+              borderColor: theme.palette.primary.main,
+              bgcolor: alpha(theme.palette.primary.main, 0.06),
+              color: "primary.main",
             },
-          }}
+          })}
         >
-          📁 Thêm ảnh
+          <AddPhotoAlternateOutlined sx={{ fontSize: 32 }} />
+          <Typography variant="body2" fontWeight={600} color="text.primary">
+            Thêm ảnh
+          </Typography>
           <input
             type="file"
             hidden
             onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
-        </Button>
+        </Box>
 
         {preview && (
           <Box
-            sx={{
-              mt: 1,
-              mb: 3,
-              width: 150,
-              height: 150,
-              borderRadius: 3,
+            sx={(theme) => ({
+              mt: 1.5,
+              width: 140,
+              height: 140,
+              borderRadius: `${radius.sm}px`,
+              border: `1px solid ${theme.palette.divider}`,
               overflow: "hidden",
               position: "relative",
               cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
               "&:hover .overlay": { opacity: 1 },
-            }}
+            })}
             onClick={() => {
               setFile(null);
               setPreview(null);
@@ -276,19 +244,19 @@ export default function PostForm({ userId, onPostAdded }: PostFormProps) {
               sx={{
                 position: "absolute",
                 inset: 0,
-                bgcolor: "rgba(25,118,210,0.4)",
-                color: "white",
+                bgcolor: "rgba(15,23,42,0.55)",
+                color: "common.white",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontWeight: "bold",
-                fontSize: "1rem",
+                gap: 0.5,
+                fontWeight: 600,
+                fontSize: "0.8125rem",
                 opacity: 0,
-                transition: "opacity 0.3s",
-                borderRadius: 3,
+                transition: "opacity 0.2s",
               }}
             >
-              ❌ Xóa ảnh
+              <DeleteOutline fontSize="small" /> Xóa ảnh
             </Box>
           </Box>
         )}
@@ -298,19 +266,9 @@ export default function PostForm({ userId, onPostAdded }: PostFormProps) {
       <Button
         variant="contained"
         size="large"
+        fullWidth
         onClick={handleSubmit}
-        sx={{
-          borderRadius: 3,
-          background: "linear-gradient(90deg, #1976d2, #42a5f5)",
-          color: "white",
-          fontWeight: "bold",
-          fontSize: "1rem",
-          py: 1,
-          "&:hover": {
-            background: "linear-gradient(90deg, #42a5f5, #1976d2)",
-          },
-          transition: "all 0.3s ease",
-        }}
+        sx={{ opacity: loading ? 0.7 : 1 }}
       >
         {loading ? "Đang xử lý..." : "Thêm bài viết"}
       </Button>

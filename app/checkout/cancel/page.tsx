@@ -10,6 +10,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { HighlightOffRounded } from "@mui/icons-material";
 import Link from "next/link";
+import { radius, softShadow, surfaceSx } from "@/app/lib/theme";
 
 export default function CancelPage() {
   return (
@@ -24,19 +25,17 @@ export default function CancelPage() {
     >
       <Container maxWidth="xs" disableGutters>
         <Paper
-          elevation={0}
           sx={(theme) => ({
+            ...surfaceSx(theme),
             p: { xs: 3, md: 4 },
-            borderRadius: 4,
             textAlign: "center",
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: "0 12px 40px rgba(2,6,23,0.10)",
+            boxShadow: softShadow(theme),
           })}
         >
           <Box
             sx={(theme) => ({
-              width: 84,
-              height: 84,
+              width: 72,
+              height: 72,
               borderRadius: "50%",
               mx: "auto",
               mb: 2.5,
@@ -47,10 +46,10 @@ export default function CancelPage() {
               color: theme.palette.error.main,
             })}
           >
-            <HighlightOffRounded sx={{ fontSize: 48 }} />
+            <HighlightOffRounded sx={{ fontSize: 40 }} />
           </Box>
 
-          <Typography variant="h5" fontWeight={800} gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Thanh toán đã bị hủy
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -65,7 +64,6 @@ export default function CancelPage() {
               variant="contained"
               size="large"
               fullWidth
-              sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
             >
               Thử lại
             </Button>
@@ -75,7 +73,6 @@ export default function CancelPage() {
               variant="outlined"
               size="large"
               fullWidth
-              sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
             >
               Quay về trang chủ
             </Button>

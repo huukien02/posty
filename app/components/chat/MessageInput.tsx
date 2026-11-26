@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
-import { Stack, TextField, Button } from "@mui/material";
+import { Stack, TextField, IconButton } from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
 
 interface Props {
   newMessage: string;
@@ -14,19 +15,39 @@ export default function MessageInput({
   onSend,
 }: Props) {
   return (
-    <Stack direction="row" spacing={1} mt={2}>
+    <Stack direction="row" spacing={1} mt={2} alignItems="center">
       <TextField
         fullWidth
         value={newMessage}
         onChange={(e) => setNewMessage(e.target.value)}
-        placeholder="Type a message"
+        placeholder="Nhập tin nhắn..."
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "999px",
+            bgcolor: "action.hover",
+            "& fieldset": { borderColor: "transparent" },
+            "&.Mui-focused fieldset": { borderColor: "primary.main" },
+          },
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") onSend();
         }}
       />
-      <Button variant="contained" onClick={onSend}>
-        Send
-      </Button>
+      <IconButton
+        onClick={onSend}
+        aria-label="Gửi"
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: "50%",
+          flexShrink: 0,
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+          "&:hover": { bgcolor: "primary.dark" },
+        }}
+      >
+        <SendIcon fontSize="small" />
+      </IconButton>
     </Stack>
   );
 }

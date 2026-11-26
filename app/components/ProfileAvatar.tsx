@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Avatar, Box, CircularProgress } from "@mui/material";
+import { Avatar, Box, CircularProgress, Tooltip } from "@mui/material";
+import { PhotoCameraOutlined } from "@mui/icons-material";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase.config";
 import { useUser } from "@/hooks/useUser";
@@ -45,17 +46,17 @@ export default function ProfileAvatar({ size = 60 }: { size?: number }) {
         const updatedUser = { ...user, avatar: data.secure_url };
         localStorage.setItem("user", JSON.stringify(updatedUser));
 
-        toast.success("Avatar updated!");
+        toast.success("Đã cập nhật ảnh đại diện!");
       }
     } catch (err) {
-      toast.error("Upload failed!");
+      toast.error("Tải ảnh lên thất bại!");
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <Box position="relative" paddingRight={2} display="inline-block">
+    <Box position="relative" display="inline-block" lineHeight={0}>
       {/* input file ẩn */}
       <input
         type="file"
@@ -66,22 +67,42 @@ export default function ProfileAvatar({ size = 60 }: { size?: number }) {
       />
 
       {/* click vào avatar để chọn ảnh */}
-      <label htmlFor="avatar-upload" style={{ cursor: "pointer" }}>
-        <Avatar
-          src={preview || user?.avatar}
-          sx={{
-            width: size,
-            height: size,
-            border: "4px solid",
-            borderColor: "background.paper",
-            boxShadow: "0 6px 20px rgba(2,6,23,0.25)",
-            transition: "0.2s",
-            "&:hover": { opacity: 0.85 },
-          }}
-        >
-          {user?.username?.[0] || user?.email?.[0]}
-        </Avatar>
-      </label>
+      <Tooltip title="Đổi ảnh đại diện">
+        <label htmlFor="avatar-upload" style={{ cursor: "pointer", display: "inline-block" }}>
+          <Avatar
+            src={preview || user?.avatar}
+            sx={{
+              width: size,
+              height: size,
+              fontSize: size * 0.4,
+              border: "4px solid",
+              borderColor: "background.paper",
+              transition: "opacity .2s",
+              "&:hover": { opacity: 0.9 },
+            }}
+          >
+            {(user?.username?.[0] || user?.email?.[0])?.toUpperCase()}
+          </Avatar>
+          <Box
+            sx={(theme) => ({
+              position: "absolute",
+              right: 2,
+              bottom: 2,
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "background.paper",
+              color: "text.secondary",
+              border: `1px solid ${theme.palette.divider}`,
+            })}
+          >
+            <PhotoCameraOutlined sx={{ fontSize: 16 }} />
+          </Box>
+        </label>
+      </Tooltip>
 
       {/* loading overlay */}
       {uploading && (
@@ -94,10 +115,10 @@ export default function ProfileAvatar({ size = 60 }: { size?: number }) {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          bgcolor="rgba(0,0,0,0.4)"
+          bgcolor="rgba(15,23,42,0.45)"
           borderRadius="50%"
         >
-          <CircularProgress size={32} sx={{ color: "#fff" }} />
+          <CircularProgress size={28} sx={{ color: "common.white" }} />
         </Box>
       )}
     </Box>

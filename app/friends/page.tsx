@@ -35,7 +35,7 @@ import {
   Check,
   Close,
 } from "@mui/icons-material";
-import { alpha } from "@mui/material/styles";
+import { radius, surfaceSx } from "@/app/lib/theme";
 import { useUser } from "@/hooks/useUser";
 import { db } from "@/lib/firebase.config";
 
@@ -152,13 +152,11 @@ export default function FriendPage() {
   if (!user) return null;
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 }, width: "100%" }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 }, width: "100%" }}>
       {/* ===== Tiêu đề trang ===== */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={800}>
-          Bạn bè 👥
-        </Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+      <Box sx={{ mb: { xs: 2.5, md: 3 } }}>
+        <Typography variant="h5">Bạn bè</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           Kết nối, quản lý lời mời và mở rộng cộng đồng của bạn.
         </Typography>
       </Box>
@@ -170,13 +168,13 @@ export default function FriendPage() {
             xs: "1fr",
             md: "minmax(0, 1fr) minmax(0, 1.35fr)",
           },
-          gap: 3,
+          gap: { xs: 2, md: 3 },
           alignItems: "start",
         }}
       >
         {/* ===== Gợi ý kết bạn ===== */}
         <SectionCard
-          icon={<PersonAddAlt1 sx={{ color: "primary.main" }} />}
+          icon={<PersonAddAlt1 fontSize="small" />}
           title="Gợi ý kết bạn"
           count={filteredUsers.length}
           sx={{ position: { md: "sticky" }, top: 24 }}
@@ -187,7 +185,7 @@ export default function FriendPage() {
             placeholder="Tìm theo email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+            sx={{ mb: 1.5 }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -203,30 +201,11 @@ export default function FriendPage() {
           />
 
           {filteredUsers.length === 0 ? (
-            <EmptyState text="Không tìm thấy người dùng" />
+            <EmptyState icon={<SearchIcon />} text="Không tìm thấy người dùng" />
           ) : (
             <Stack
               spacing={0.5}
-              sx={(theme) => ({
-                maxHeight: 440,
-                overflowY: "auto",
-                mx: -0.5,
-                px: 0.5,
-                scrollbarWidth: "thin",
-                scrollbarColor: `${alpha(
-                  theme.palette.primary.main,
-                  0.6
-                )} transparent`,
-                "&::-webkit-scrollbar": { width: 8 },
-                "&::-webkit-scrollbar-thumb": {
-                  background: alpha(theme.palette.primary.main, 0.5),
-                  borderRadius: 8,
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  background: theme.palette.primary.main,
-                },
-                "&::-webkit-scrollbar-track": { background: "transparent" },
-              })}
+              sx={{ maxHeight: 480, overflowY: "auto", mx: -1 }}
             >
               {filteredUsers.map((u) => {
                 const status = requestStatus[u.email];
@@ -239,7 +218,7 @@ export default function FriendPage() {
                         status === "sent" ? <Check /> : <PersonAddAlt1 />
                       }
                       disabled={status === "loading" || status === "sent"}
-                      sx={{ borderRadius: 2, flexShrink: 0 }}
+                      sx={{ flexShrink: 0 }}
                       onClick={async () => {
                         setRequestStatus((prev) => ({
                           ...prev,
@@ -277,14 +256,14 @@ export default function FriendPage() {
         <Stack spacing={3}>
           {/* Bạn bè */}
           <SectionCard
-            icon={<Group sx={{ color: "#10b981" }} />}
+            icon={<Group fontSize="small" />}
             title="Bạn bè"
             count={friends.length}
           >
             {friends.length === 0 ? (
-              <EmptyState text="Chưa có bạn bè" />
+              <EmptyState icon={<Group />} text="Chưa có bạn bè" />
             ) : (
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} sx={{ mx: -1 }}>
                 {friends.map((f) => {
                   const friendEmail =
                     f.from === currentUserEmail ? f.to : f.from;
@@ -295,10 +274,10 @@ export default function FriendPage() {
                       <Button
                         size="small"
                         variant="outlined"
-                        color="error"
+                        color="inherit"
                         startIcon={<PersonRemove />}
                         disabled={loadingRemoveId === f.id}
-                        sx={{ borderRadius: 2, flexShrink: 0 }}
+                        sx={{ flexShrink: 0 }}
                         onClick={() => removeFriendship(f.id)}
                       >
                         Xóa bạn
@@ -312,14 +291,14 @@ export default function FriendPage() {
 
           {/* Lời mời đến */}
           <SectionCard
-            icon={<MarkEmailReadOutlined sx={{ color: "primary.main" }} />}
+            icon={<MarkEmailReadOutlined fontSize="small" />}
             title="Lời mời kết bạn"
             count={friendRequests.length}
           >
             {friendRequests.length === 0 ? (
-              <EmptyState text="Không có lời mời nào" />
+              <EmptyState icon={<MarkEmailReadOutlined />} text="Không có lời mời nào" />
             ) : (
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} sx={{ mx: -1 }}>
                 {friendRequests.map((f) => {
                   const sender = users.find((u) => u.email === f.from);
                   if (!sender) return null;
@@ -336,10 +315,10 @@ export default function FriendPage() {
                         <Button
                           size="small"
                           variant="contained"
-                          color="success"
+                          color="primary"
                           startIcon={<Check />}
                           disabled={busy}
-                          sx={{ borderRadius: 2 }}
+                          sx={{ flexShrink: 0 }}
                           onClick={async () => {
                             setRequestActionStatus((prev) => ({
                               ...prev,
@@ -365,10 +344,10 @@ export default function FriendPage() {
                         <Button
                           size="small"
                           variant="outlined"
-                          color="error"
+                          color="inherit"
                           startIcon={<Close />}
                           disabled={busy}
-                          sx={{ borderRadius: 2 }}
+                          sx={{ flexShrink: 0 }}
                           onClick={async () => {
                             setRequestActionStatus((prev) => ({
                               ...prev,
@@ -401,14 +380,14 @@ export default function FriendPage() {
 
           {/* Lời mời đã gửi */}
           <SectionCard
-            icon={<SendOutlined sx={{ color: "#f59e0b" }} />}
+            icon={<SendOutlined fontSize="small" />}
             title="Lời mời đã gửi"
             count={sentRequests.length}
           >
             {sentRequests.length === 0 ? (
-              <EmptyState text="Bạn chưa gửi lời mời nào" />
+              <EmptyState icon={<SendOutlined />} text="Bạn chưa gửi lời mời nào" />
             ) : (
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} sx={{ mx: -1 }}>
                 {sentRequests.map((f) => {
                   const receiver = users.find((u) => u.email === f.to);
                   if (!receiver) return null;
@@ -417,14 +396,14 @@ export default function FriendPage() {
                       <Chip
                         size="small"
                         label="Đang chờ"
-                        sx={{ mr: 1, flexShrink: 0 }}
+                        sx={{ mr: 1, flexShrink: 0, bgcolor: "action.hover" }}
                       />
                       <Button
                         size="small"
                         variant="outlined"
-                        color="error"
+                        color="inherit"
                         disabled={loadingRemoveId === f.id}
-                        sx={{ borderRadius: 2, flexShrink: 0 }}
+                        sx={{ flexShrink: 0 }}
                         onClick={() => removeFriendship(f.id)}
                       >
                         {loadingRemoveId === f.id ? (
@@ -465,29 +444,20 @@ function SectionCard({
       elevation={0}
       sx={[
         (theme) => ({
+          ...surfaceSx(theme),
           p: { xs: 2, md: 2.5 },
-          borderRadius: 4,
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow:
-            theme.palette.mode === "light"
-              ? "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.04)"
-              : "none",
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-        {icon}
-        <Typography variant="subtitle1" fontWeight={700}>
-          {title}
-        </Typography>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+        <Box sx={{ display: "flex", color: "text.secondary" }}>{icon}</Box>
+        <Typography variant="subtitle1">{title}</Typography>
         {typeof count === "number" && (
           <Chip
             label={count}
             size="small"
-            color="primary"
-            variant="outlined"
-            sx={{ height: 22, fontWeight: 700 }}
+            sx={{ height: 20, fontSize: 12, fontWeight: 600, bgcolor: "action.hover" }}
           />
         )}
       </Stack>
@@ -510,19 +480,19 @@ function FriendRow({
       alignItems="center"
       sx={{
         p: 1,
-        borderRadius: 2.5,
+        borderRadius: `${radius.md}px`,
         transition: "background-color .15s",
         "&:hover": { bgcolor: "action.hover" },
       }}
     >
-      <Avatar src={person?.avatar} sx={{ width: 44, height: 44 }}>
+      <Avatar src={person?.avatar} sx={{ width: 48, height: 48 }}>
         {person?.username?.[0]?.toUpperCase()}
       </Avatar>
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography fontWeight={600} noWrap fontSize={14}>
           {person?.username}
         </Typography>
-        <Typography variant="body2" color="text.secondary" noWrap fontSize={12}>
+        <Typography variant="caption" color="text.secondary" noWrap component="div">
           {person?.email}
         </Typography>
       </Box>
@@ -531,9 +501,17 @@ function FriendRow({
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyState({ text, icon }: { text: string; icon?: React.ReactNode }) {
   return (
-    <Box sx={{ py: 3, textAlign: "center" }}>
+    <Box
+      sx={{
+        py: 3.5,
+        textAlign: "center",
+        color: "text.disabled",
+        "& svg": { fontSize: 32, mb: 0.5 },
+      }}
+    >
+      {icon}
       <Typography variant="body2" color="text.secondary">
         {text}
       </Typography>

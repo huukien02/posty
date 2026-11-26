@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Box, Button, Typography, Divider, Paper } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import Image from "next/image";
+import { radius, softShadow, surfaceSx } from "@/app/lib/theme";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import {
@@ -111,57 +112,45 @@ export default function LoginPage() {
 
   return (
     <Box
-      sx={(theme) => {
-        const isDark = theme.palette.mode === "dark";
-        return {
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
-          width: "100%",
-          background: `radial-gradient(60% 60% at 50% 0%, ${alpha(
-            theme.palette.primary.main,
-            isDark ? 0.12 : 0.08
-          )} 0%, transparent 70%)`,
-        };
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+        width: "100%",
       }}
     >
       <Paper
-        elevation={0}
         sx={(theme) => ({
+          ...surfaceSx(theme),
           width: "100%",
-          maxWidth: 410,
-          p: { xs: 3, md: 4 },
-          borderRadius: 4,
+          maxWidth: 400,
+          p: { xs: 3, sm: 4 },
           textAlign: "center",
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow: "0 16px 48px rgba(2,6,23,0.12)",
-          bgcolor: theme.palette.background.paper,
+          boxShadow: softShadow(theme),
         })}
       >
         <Box
-          sx={{
-            width: 64,
-            height: 64,
+          sx={(theme) => ({
+            width: 56,
+            height: 56,
             mx: "auto",
-            mb: 2,
-            borderRadius: 3,
+            mb: 2.5,
+            borderRadius: `${radius.md}px`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-          }}
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+          })}
         >
-          <Image src="/favicon.ico" alt="Posty" width={36} height={36} />
+          <Image src="/favicon.ico" alt="Posty" width={32} height={32} />
         </Box>
 
-        <Typography variant="h5" fontWeight={800}>
-          Chào mừng đến Posty
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mb={3.5}>
-          Đăng nhập để tiếp tục
+        <Typography variant="h5">Chào mừng đến Posty</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 3.5 }}>
+          Đăng nhập để kết nối và chia sẻ cùng bạn bè
         </Typography>
 
         <Button
@@ -172,40 +161,36 @@ export default function LoginPage() {
           onClick={handleGoogleLogin}
           startIcon={<Google />}
           sx={(theme) => ({
-            borderRadius: 2.5,
-            py: 1.25,
-            fontWeight: 600,
             color: theme.palette.text.primary,
             borderColor: theme.palette.divider,
             "&:hover": {
-              borderColor: theme.palette.primary.main,
-              bgcolor: alpha(theme.palette.primary.main, 0.06),
+              borderColor: alpha(theme.palette.text.primary, 0.3),
+              bgcolor: theme.palette.action.hover,
             },
           })}
         >
-          Đăng nhập với Google
+          Tiếp tục với Google
         </Button>
 
-        <Divider sx={{ my: 2, color: "text.secondary", fontSize: 13 }}>
-          hoặc
-        </Divider>
+        <Divider sx={{ my: 2, color: "text.secondary", fontSize: 12 }}>hoặc</Divider>
 
         <Button
-          variant="contained"
+          variant="outlined"
           fullWidth
           size="large"
           disabled={loading}
           onClick={handleFacebookLogin}
-          startIcon={<Facebook />}
-          sx={{
-            borderRadius: 2.5,
-            py: 1.25,
-            fontWeight: 600,
-            bgcolor: "#1877F2",
-            "&:hover": { bgcolor: "#166FE5" },
-          }}
+          startIcon={<Facebook sx={{ color: "#1877F2" }} />}
+          sx={(theme) => ({
+            color: theme.palette.text.primary,
+            borderColor: theme.palette.divider,
+            "&:hover": {
+              borderColor: alpha(theme.palette.text.primary, 0.3),
+              bgcolor: theme.palette.action.hover,
+            },
+          })}
         >
-          Đăng nhập với Facebook
+          Tiếp tục với Facebook
         </Button>
 
         <Typography
@@ -213,8 +198,15 @@ export default function LoginPage() {
           color="text.secondary"
           sx={{ display: "block", mt: 3.5, lineHeight: 1.6 }}
         >
-          Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và Chính sách
-          bảo mật của chúng tôi.
+          Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và{" "}
+          <Box
+            component="a"
+            href="/privacy-policy"
+            sx={{ color: "primary.main", textDecoration: "none", fontWeight: 500 }}
+          >
+            Chính sách quyền riêng tư
+          </Box>{" "}
+          của chúng tôi.
         </Typography>
       </Paper>
     </Box>

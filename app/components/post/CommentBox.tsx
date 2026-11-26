@@ -43,19 +43,16 @@ export default function CommentBox({
   };
 
   return (
-    <Paper
-      variant="outlined"
+    <Box
       sx={{
         display: "flex",
         alignItems: "center",
         gap: 1,
-        p: 1.5,
-        mt: 2,
-        borderRadius: 3,
+        mt: 1,
       }}
     >
       {/* Avatar user */}
-      <Avatar src={user?.avatar ?? ""} sx={{ width: 36, height: 36 }} />
+      <Avatar src={user?.avatar ?? ""} sx={{ width: 32, height: 32 }} />
 
       {/* Input comment */}
       <TextField
@@ -65,25 +62,15 @@ export default function CommentBox({
         fullWidth
         value={text}
         onChange={(e) => setText(e.target.value)}
-        sx={(theme) => ({
+        sx={{
           "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-            bgcolor: theme.palette.background.paper, // nền input
-            "& fieldset": {
-              borderColor: theme.palette.divider, // viền mặc định
-            },
-            "&:hover fieldset": {
-              borderColor: theme.palette.primary.main,
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: theme.palette.primary.main,
-              borderWidth: 2,
-            },
+            borderRadius: "999px",
+            bgcolor: "action.hover",
+            "& fieldset": { borderColor: "transparent" },
+            "&:hover fieldset": { borderColor: "divider" },
+            "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 1 },
           },
-          "& input": {
-            color: theme.palette.text.primary, // chữ tự đổi màu dark/light
-          },
-        })}
+        }}
       />
 
       {/* Nút gửi */}
@@ -92,8 +79,8 @@ export default function CommentBox({
         disabled={!text.trim()}
         onClick={handleAddComment}
       >
-        <SendIcon />
+        <SendIcon fontSize="small" />
       </IconButton>
-    </Paper>
+    </Box>
   );
 }

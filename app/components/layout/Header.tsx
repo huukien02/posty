@@ -14,10 +14,23 @@ import {
   MenuItem,
   Badge,
   Divider,
+  Avatar,
+  Paper,
+  Tooltip,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChatIcon from "@mui/icons-material/Chat";
-import GroupIcon from "@mui/icons-material/Group";
+import {
+  HomeOutlined,
+  HomeRounded,
+  GroupOutlined,
+  GroupRounded,
+  ChatBubbleOutline,
+  ChatBubble,
+  PersonOutline,
+  Person,
+  WorkspacePremiumOutlined,
+  LogoutOutlined,
+} from "@mui/icons-material";
+import { layout } from "@/app/lib/theme";
 
 // Firebase
 import { ref, onValue, off } from "firebase/database";
@@ -201,197 +214,186 @@ const Header = () => {
   };
   const handleMenuClose = () => setAnchorEl(null);
 
-  const menuItems = user
+  // ---------- Giao diện ----------
+  const u = user as any;
+  const displayName: string = u?.username || u?.name || u?.email || "";
+
+  const navItems = [
+    { label: "Trang chủ", href: "/", icon: <HomeOutlined />, activeIcon: <HomeRounded />, dot: false, auth: false },
+    { label: "Bạn bè", href: "/friends", icon: <GroupOutlined />, activeIcon: <GroupRounded />, dot: hasFriendRequest, auth: true },
+    { label: "Tin nhắn", href: "/chat", icon: <ChatBubbleOutline />, activeIcon: <ChatBubble />, dot: hasUnread, auth: true },
+  ].filter((i) => !i.auth || user);
+
+  const mobileItems = user
     ? [
-        { label: "Home", href: "/" },
-        { label: "Profile", href: "/profile" },
-        { label: "Checkout", href: "/checkout" },
-        {
-          label: "Friends",
-          href: "/friends",
-          icon: hasFriendRequest && (
-            <Badge
-              color="error"
-              variant="dot"
-              invisible={!hasFriendRequest}
-              overlap="circular"
-            >
-              <GroupIcon />
-            </Badge>
-          ),
-        },
-        {
-          label: "Chat",
-          href: "/chat",
-          icon: hasUnread && (
-            <Badge
-              color="error"
-              variant="dot"
-              invisible={!hasUnread}
-              overlap="circular"
-            >
-              <ChatIcon />
-            </Badge>
-          ),
-        },
-        { label: "Logout", onClick: handleLogout },
+        ...navItems,
+        { label: "Hồ sơ", href: "/profile", icon: <PersonOutline />, activeIcon: <Person />, dot: false, auth: true },
       ]
-    : [
-        { label: "Home", href: "/" },
-        { label: "Login", href: "/login" },
-      ];
+    : navItems;
 
   return (
-    <AppBar
-      position="static"
-      elevation={0}
-      sx={(theme) => ({
-        bgcolor: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-        borderBottom: `1px solid ${theme.palette.divider}`,
-      })}
-    >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography
-          onClick={() => router.push("/")}
-          variant="h4"
-          component="div"
+    <>
+      <AppBar
+        position="static"
+        sx={(theme) => ({
+          bgcolor: alpha(theme.palette.background.paper, 0.85),
+          backdropFilter: "saturate(180%) blur(12px)",
+          color: theme.palette.text.primary,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        })}
+      >
+        <Toolbar
           sx={{
-            cursor: "pointer",
-            fontWeight: "bold",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            color: "primary.main",
+            minHeight: { xs: 56, md: layout.headerHeight },
+            width: "100%",
+            maxWidth: layout.contentWidth,
+            mx: "auto",
+            px: { xs: 2, md: 3 },
+            gap: 2,
           }}
         >
-          <Image src="/favicon.ico" alt="Logo" width={32} height={32} /> Posty
-        </Typography>
+          {/* Logo */}
+          <Box
+            onClick={() => router.push("/")}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.25,
+              cursor: "pointer",
+              flex: { md: 1 },
+              userSelect: "none",
+            }}
+          >
+            <Image src="/favicon.ico" alt="Posty" width={28} height={28} />
+            <Typography
+              component="span"
+              sx={{ fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em" }}
+            >
+              Posty
+            </Typography>
+          </Box>
 
-        {/* Desktop menu */}
-        <Box
-          sx={{
-            display: { xs: "none", md: "flex" },
-            gap: 1,
-            alignItems: "center",
-          }}
-        >
-          {menuItems.map((item) => {
-            const active = isActive(item.href);
-            const activeSx = {
-              borderRadius: 2,
-              fontWeight: active ? 700 : 500,
-              color: active ? "primary.main" : "inherit",
-              bgcolor: active
-                ? (theme: any) => alpha(theme.palette.primary.main, 0.12)
-                : "transparent",
-              "&:hover": {
-                bgcolor: (theme: any) =>
-                  alpha(theme.palette.primary.main, active ? 0.18 : 0.08),
-                color: "primary.main",
-              },
-            };
-            return item.href ? (
-              <Button
-                key={item.label}
-                color="inherit"
-                href={item.href}
-                startIcon={item.icon}
-                sx={activeSx}
-              >
-                {item.label}
-              </Button>
+          {/* Điều hướng chính (desktop) */}
+          <Box
+            component="nav"
+            sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, alignItems: "center" }}
+          >
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Tooltip key={item.href} title={item.label}>
+                  <Button
+                    color="inherit"
+                    href={item.href}
+                    aria-label={item.label}
+                    sx={(theme) => ({
+                      position: "relative",
+                      minWidth: 96,
+                      height: layout.headerHeight,
+                      borderRadius: 0,
+                      color: active ? "primary.main" : "text.secondary",
+                      "&:hover": {
+                        bgcolor: alpha(theme.palette.text.primary, 0.04),
+                        color: active ? "primary.main" : "text.primary",
+                      },
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        left: 16,
+                        right: 16,
+                        bottom: 0,
+                        height: 3,
+                        borderRadius: "3px 3px 0 0",
+                        bgcolor: active ? "primary.main" : "transparent",
+                      },
+                    })}
+                  >
+                    <Badge color="error" variant="dot" invisible={!item.dot} overlap="circular">
+                      {active ? item.activeIcon : item.icon}
+                    </Badge>
+                  </Button>
+                </Tooltip>
+              );
+            })}
+          </Box>
+
+          {/* Bên phải */}
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Box sx={{ display: { xs: user ? "none" : "block", md: "block" } }}>
+              <ToggleThemeButton />
+            </Box>
+
+            {user ? (
+              <>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href="/checkout"
+                  startIcon={<WorkspacePremiumOutlined />}
+                  sx={{ display: { xs: "none", sm: "inline-flex" }, color: "text.primary" }}
+                >
+                  Nâng cấp
+                </Button>
+                <IconButton
+                  onClick={handleMenuOpen}
+                  aria-label="Tài khoản"
+                  sx={{ p: 0.5, borderRadius: "50%" }}
+                >
+                  <Avatar
+                    src={u?.avatar || undefined}
+                    alt={displayName}
+                    sx={{ width: 34, height: 34, fontSize: 14 }}
+                  >
+                    {displayName.charAt(0).toUpperCase()}
+                  </Avatar>
+                </IconButton>
+              </>
             ) : (
-              <Button
-                key={item.label}
-                color="inherit"
-                onClick={item.onClick}
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    bgcolor: (theme) =>
-                      alpha(theme.palette.error.main, 0.1),
-                    color: "error.main",
-                  },
-                }}
-              >
-                {item.label}
+              <Button variant="contained" href="/login">
+                Đăng nhập
               </Button>
-            );
-          })}
-          <ToggleThemeButton />
-        </Box>
+            )}
+          </Box>
 
-        {/* Mobile menu */}
-        <Box sx={{ display: { xs: "flex", md: "none" } }}>
-          <IconButton color="inherit" onClick={handleMenuOpen}>
-            <MenuIcon />
-          </IconButton>
+          {/* Menu tài khoản */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            slotProps={{
-              paper: {
-                sx: {
-                  minWidth: 200,
-                  borderRadius: 2,
-                  mt: 1,
-                  p: 0.5,
-                  "& .MuiMenuItem-root": {
-                    borderRadius: 1.5,
-                    minHeight: 42,
-                  },
-                },
-              },
-            }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            slotProps={{ paper: { sx: { minWidth: 240 } } }}
           >
-            {menuItems.map((item) => {
-              const active = isActive(item.href);
-              return item.href ? (
-                <MenuItem
-                  key={item.label}
-                  onClick={handleMenuClose}
-                  component="a"
-                  href={item.href}
-                  selected={active}
-                  sx={{
-                    color: active ? "primary.main" : "inherit",
-                    fontWeight: active ? 700 : 500,
-                    "&.Mui-selected": {
-                      bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, 0.12),
-                      "&:hover": {
-                        bgcolor: (theme) =>
-                          alpha(theme.palette.primary.main, 0.18),
-                      },
-                    },
-                  }}
-                >
-                  {item.icon}
-                  <Typography sx={{ ml: item.icon ? 1 : 0, fontWeight: "inherit" }}>
-                    {item.label}
+            <Box sx={{ px: 1.5, py: 1, display: "flex", gap: 1.5, alignItems: "center" }}>
+              <Avatar src={u?.avatar || undefined} sx={{ width: 40, height: 40 }}>
+                {displayName.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography fontWeight={600} noWrap>
+                  {displayName}
+                </Typography>
+                {u?.email && (
+                  <Typography variant="caption" color="text.secondary" noWrap component="div">
+                    {u.email}
                   </Typography>
-                </MenuItem>
-              ) : (
-                <MenuItem
-                  key={item.label}
-                  onClick={item.onClick}
-                  sx={{
-                    color: "error.main",
-                    fontWeight: 600,
-                    "&:hover": {
-                      bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
-                    },
-                  }}
-                >
-                  {item.label}
-                </MenuItem>
-              );
-            })}
-
+                )}
+              </Box>
+            </Box>
             <Divider sx={{ my: 0.5 }} />
-
+            <MenuItem component="a" href="/profile" onClick={handleMenuClose} selected={isActive("/profile")}>
+              <PersonOutline fontSize="small" /> Hồ sơ của tôi
+            </MenuItem>
+            <MenuItem component="a" href="/checkout" onClick={handleMenuClose} selected={isActive("/checkout")}>
+              <WorkspacePremiumOutlined fontSize="small" /> Nâng cấp gói
+            </MenuItem>
             <Box
               sx={{
                 display: "flex",
@@ -399,18 +401,67 @@ const Header = () => {
                 justifyContent: "space-between",
                 pl: 2,
                 pr: 0.5,
-                py: 0.5,
+                minHeight: 40,
               }}
             >
-              <Typography variant="body2" color="text.secondary">
-                Giao diện
-              </Typography>
+              <Typography variant="body2">Giao diện sáng / tối</Typography>
               <ToggleThemeButton />
             </Box>
+            <Divider sx={{ my: 0.5 }} />
+            <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
+              <LogoutOutlined fontSize="small" /> Đăng xuất
+            </MenuItem>
           </Menu>
-        </Box>
-      </Toolbar>
-    </AppBar>
+        </Toolbar>
+      </AppBar>
+
+      {/* Thanh điều hướng dưới (mobile) */}
+      <Paper
+        component="nav"
+        sx={(theme) => ({
+          display: { xs: "flex", md: "none" },
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: layout.bottomNavHeight,
+          pb: "env(safe-area-inset-bottom)",
+          zIndex: theme.zIndex.appBar,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderRadius: 0,
+          bgcolor: alpha(theme.palette.background.paper, 0.92),
+          backdropFilter: "saturate(180%) blur(12px)",
+        })}
+      >
+        {mobileItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Box
+              key={item.href}
+              component="a"
+              href={item.href}
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.25,
+                textDecoration: "none",
+                color: active ? "primary.main" : "text.secondary",
+                fontSize: 11,
+                fontWeight: active ? 600 : 500,
+              }}
+            >
+              <Badge color="error" variant="dot" invisible={!item.dot} overlap="circular">
+                {active ? item.activeIcon : item.icon}
+              </Badge>
+              {item.label}
+            </Box>
+          );
+        })}
+      </Paper>
+    </>
   );
 };
 

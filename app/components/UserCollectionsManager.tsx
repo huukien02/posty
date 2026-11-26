@@ -18,7 +18,11 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { FolderOutlined } from "@mui/icons-material";
+import { radius } from "@/app/lib/theme";
 import { useForm } from "react-hook-form";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -120,156 +124,110 @@ export default function CollectionManager({
     <Box
       maxWidth={"100%"}
       mx="auto"
-      mt={4}
       display="flex"
       flexDirection="column"
       gap={3}
       sx={{
-        animation: "fadeIn 0.4s ease",
+        animation: "fadeIn 0.25s ease",
         "@keyframes fadeIn": {
-          from: { opacity: 0, transform: "translateY(10px)" },
+          from: { opacity: 0, transform: "translateY(6px)" },
           to: { opacity: 1, transform: "translateY(0)" },
         },
       }}
     >
-      <Card
-        sx={(theme) => ({
-          border: `1px solid ${
-            theme.palette.mode === "light"
-              ? theme.palette.divider
-              : theme.palette.grey[800]
-          }`,
-          borderRadius: 3,
-          boxShadow:
-            theme.palette.mode === "light"
-              ? "0 4px 20px rgba(0,0,0,0.06)"
-              : "0 4px 20px rgba(0,0,0,0.4)",
-          backgroundColor:
-            theme.palette.mode === "light"
-              ? theme.palette.background.paper
-              : theme.palette.background.default,
-          transition: theme.transitions.create(["box-shadow", "transform"], {
-            duration: theme.transitions.duration.shortest,
-          }),
-          "&:hover": {
-            boxShadow:
-              theme.palette.mode === "light"
-                ? "0 8px 28px rgba(0,0,0,0.12)"
-                : "0 8px 28px rgba(0,0,0,0.6)",
-            transform: "translateY(-2px)",
-          },
-        })}
-      >
-        <CardContent sx={{ p: 0 }}>
+      <Card sx={{ bgcolor: "background.paper" }}>
+        <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
           <Box
             display="flex"
             alignItems="center"
-            px={3}
-            pt={2.5}
-            pb={1.5}
+            px={2.5}
+            py={1.5}
             justifyContent="space-between"
-            sx={{
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-            }}
           >
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{ color: "primary.main" }}
-            >
-              My Collections
-            </Typography>
-            <AddIcon
-              sx={{
-                fontSize: 28,
-                cursor: "pointer",
-                color: "primary.main",
-                transition: "transform 0.2s, color 0.2s",
-                "&:hover": {
-                  color: "primary.dark",
-                  transform: "rotate(90deg) scale(1.1)",
-                },
-              }}
+            <Typography variant="subtitle1">Bộ sưu tập của tôi</Typography>
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<AddIcon />}
               onClick={handleAdd}
-            />
+            >
+              Tạo mới
+            </Button>
           </Box>
           <Divider />
 
           {/* Loading / Empty */}
           {collections.length === 0 ? (
             <Box py={4} textAlign="center">
-              <CircularProgress size={28} />
+              <CircularProgress size={24} />
             </Box>
           ) : (
-            <List sx={{ py: 0 }}>
+            <List sx={{ py: 0.5, px: 0.5 }}>
               {collections.map((col, index) => (
                 <ListItem
                   key={col.id}
-                  divider={index !== collections.length - 1}
                   sx={{
-                    px: 3,
-                    py: 1.5,
-                    transition: "background 0.2s, transform 0.2s",
-                    "&:hover": {
-                      backgroundColor: "rgba(0,0,0,0.03)",
-                      transform: "translateX(4px)",
-                    },
+                    px: 2,
+                    py: 1.25,
+                    borderRadius: `${radius.sm}px`,
+                    transition: "background-color 0.15s",
+                    "&:hover": { bgcolor: "action.hover" },
                     "& .MuiListItemSecondaryAction-root": {
-                      opacity: 0,
-                      transition: "opacity 0.2s",
+                      opacity: { xs: 1, md: 0 },
+                      transition: "opacity 0.15s",
                     },
                     "&:hover .MuiListItemSecondaryAction-root": { opacity: 1 },
                   }}
                   secondaryAction={
-                    <Box display="flex" gap={1}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(col)}
-                        sx={{
-                          "&:hover": {
-                            backgroundColor: "rgba(25, 118, 210, 0.1)",
-                          },
-                        }}
-                      >
-                        <EditIcon color="primary" fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(col.id)}
-                        sx={{
-                          "&:hover": {
-                            backgroundColor: "rgba(211, 47, 47, 0.1)",
-                          },
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+                    <Box display="flex" gap={0.5}>
+                      <Tooltip title="Sửa">
+                        <IconButton size="small" onClick={() => handleEdit(col)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Xoá">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDelete(col.id)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   }
                 >
+                  <Box
+                    sx={(theme) => ({
+                      width: 36,
+                      height: 36,
+                      mr: 1.5,
+                      flexShrink: 0,
+                      borderRadius: `${radius.sm}px`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "primary.main",
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    })}
+                  >
+                    <FolderOutlined fontSize="small" />
+                  </Box>
                   <ListItemText
                     primary={
-                      <Typography
-                        fontWeight="bold"
-                        sx={{ color: "text.primary" }}
-                      >
+                      <Typography fontWeight={600} fontSize={14} sx={{ color: "text.primary" }}>
                         {col.title}{" "}
                         <Typography
                           component="span"
-                          sx={{ color: "text.secondary", fontWeight: 400 }}
+                          sx={{ color: "text.secondary", fontWeight: 400, fontSize: 13 }}
                         >
-                          ({col?.postIds.length})
+                          · {col?.postIds.length} bài viết
                         </Typography>
                       </Typography>
                     }
                     secondary={
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary", fontSize: "0.8rem" }}
-                      >
-                        {new Date(col.createdAt).toLocaleString()}
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        {new Date(col.createdAt).toLocaleString("vi-VN")}
                       </Typography>
                     }
                   />
@@ -281,49 +239,22 @@ export default function CollectionManager({
       </Card>
 
       {/* Popup thêm/sửa */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontWeight: "bold",
-            textAlign: "center",
-            pb: 1,
-          }}
-        >
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>
           {editingId ? "Chỉnh sửa bộ sưu tập" : "Thêm bộ sưu tập mới"}
         </DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogContent dividers>
+          <DialogContent sx={{ pt: "8px !important" }}>
             <TextField
               label="Tên bộ sưu tập"
               {...register("title", { required: true })}
               fullWidth
               size="small"
               InputLabelProps={{ shrink: true }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  "&:hover fieldset": { borderColor: "primary.main" },
-                },
-              }}
             />
           </DialogContent>
-          <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
-            <Button
-              onClick={() => setOpen(false)}
-              variant="outlined"
-              color="inherit"
-            >
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setOpen(false)} color="inherit">
               Huỷ
             </Button>
             <Button type="submit" variant="contained">

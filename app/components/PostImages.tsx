@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, IconButton } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
@@ -34,16 +35,17 @@ export default function PostImages({ post }: any) {
         height: 300, // cố định chiều cao khung
         overflow: "hidden",
         borderRadius: "12px",
+        bgcolor: "action.hover",
       }}
     >
       <img
         src={images[currentIndex]}
         alt={post.title}
         style={{
+          display: "block",
           width: "100%",
-          height: "auto",
-          maxWidth: "100%",
-          borderRadius: "12px",
+          height: "100%",
+          objectFit: "cover",
         }}
       />
       {images.length > 1 && (
@@ -55,7 +57,14 @@ export default function PostImages({ post }: any) {
               top: "50%",
               left: 0,
               transform: "translateY(-50%)",
-              color: "white",
+              m: 0.5,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "common.white",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              "& svg": { fontSize: 14 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowBackIosNewIcon />
@@ -67,7 +76,14 @@ export default function PostImages({ post }: any) {
               top: "50%",
               right: 0,
               transform: "translateY(-50%)",
-              color: "white",
+              m: 0.5,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "common.white",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              "& svg": { fontSize: 14 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowForwardIosIcon />

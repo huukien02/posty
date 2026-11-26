@@ -12,7 +12,7 @@ export default function CommentList({ comments }: { comments: any[] }) {
         size="small"
         disabled={comments.length === 0} // disable khi không có comment
         onClick={() => setOpen(!open)}
-        sx={{ mb: 1, textTransform: "none" }}
+        sx={{ mb: 1, px: 1, color: "text.secondary", fontWeight: 600 }}
       >
         {comments.length === 0
           ? "Chưa có bình luận nào"
@@ -23,29 +23,28 @@ export default function CommentList({ comments }: { comments: any[] }) {
       {open && (
         <Box>
           {comments.map((c, idx) => (
-            <Box key={c.id} mb={2}>
-              <Box display="flex" alignItems="flex-start">
-                <Avatar src={c.user.avatar ?? ""} sx={{ mr: 2 }} />
+            <Box key={c.id} mb={1.25}>
+              <Box display="flex" alignItems="flex-start" gap={1}>
+                <Avatar src={c.user.avatar ?? ""} sx={{ width: 32, height: 32 }} />
                 <Box
-                  sx={(theme) => ({
-                    bgcolor:
-                      theme.palette.mode === "light"
-                        ? theme.palette.grey[300]
-                        : theme.palette.background.paper,
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                    flex: 1,
-                  })}
+                  sx={{
+                    bgcolor: "action.hover",
+                    px: 1.5,
+                    py: 0.75,
+                    borderRadius: "14px",
+                    maxWidth: "100%",
+                    minWidth: 0,
+                  }}
                 >
                   <Typography
                     variant="body2"
-                    fontWeight="bold"
+                    fontWeight={600}
                     color="text.primary"
+                    sx={{ fontSize: 13 }}
                   >
                     {c.user.username}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.primary" sx={{ wordBreak: "break-word" }}>
                     {c.text}
                   </Typography>
                 </Box>

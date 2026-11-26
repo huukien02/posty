@@ -2,10 +2,10 @@
 
 import { Box } from "@mui/material";
 import Header from "./Header";
-import Footer from "./Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ThemeRegistry from "@/app/lib/theme-implementation";
+import { layout } from "@/app/lib/theme";
 
 interface Props {
   children: React.ReactNode;
@@ -25,7 +25,8 @@ const ClientLayout = ({ children }: Props) => {
         })}
       >
         <Header />
-        {/* Vùng nội dung: cuộn nội bộ, Header/Footer luôn hiển thị */}
+        {/* Vùng nội dung: cuộn nội bộ, Header luôn hiển thị.
+            Trên mobile chừa chỗ cho thanh điều hướng dưới. */}
         <Box
           component="main"
           sx={{
@@ -34,12 +35,21 @@ const ClientLayout = ({ children }: Props) => {
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
+            pb: {
+              xs: `calc(${layout.bottomNavHeight}px + env(safe-area-inset-bottom))`,
+              md: 0,
+            },
           }}
         >
           {children}
         </Box>
-        <ToastContainer />
-        <Footer />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar
+          newestOnTop
+          theme="colored"
+        />
       </Box>
     </ThemeRegistry>
   );

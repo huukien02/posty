@@ -28,6 +28,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { layout, radius, surfaceSx } from "@/app/lib/theme";
+import dayjs from "@/app/lib/dayjs";
 import {
   ArrowBackRounded,
   ChatBubbleOutlineRounded,
@@ -163,13 +165,12 @@ export default function PostDetail() {
 
   if (!post) {
     return (
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container sx={{ py: { xs: 2, md: 3 }, maxWidth: `${layout.feedWidth + 48}px !important` }}>
         <Paper
           elevation={0}
           sx={(theme) => ({
-            p: { xs: 2.5, md: 4 },
-            borderRadius: 4,
-            border: `1px solid ${theme.palette.divider}`,
+            ...surfaceSx(theme),
+            p: { xs: 2, md: 3 },
           })}
         >
           <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
@@ -179,14 +180,14 @@ export default function PostDetail() {
               <Skeleton width="55%" height={18} />
             </Box>
           </Stack>
-          <Skeleton width="80%" height={42} />
+          <Skeleton width="80%" height={36} />
           <Skeleton width="100%" height={20} sx={{ mt: 2 }} />
           <Skeleton width="95%" height={20} />
           <Skeleton width="60%" height={20} />
           <Skeleton
             variant="rounded"
             height={220}
-            sx={{ mt: 3, borderRadius: 3 }}
+            sx={{ mt: 3, borderRadius: `${radius.md}px` }}
           />
         </Paper>
       </Container>
@@ -209,8 +210,9 @@ export default function PostDetail() {
 
   return (
     <Container
-      maxWidth="xl"
       sx={{
+        maxWidth: `${layout.contentWidth}px !important`,
+        px: { xs: 1.5, sm: 2, md: 3 },
         py: { xs: 2, md: 3 },
         flex: 1,
         minHeight: 0,
@@ -223,14 +225,16 @@ export default function PostDetail() {
         icon={<ArrowBackRounded sx={{ fontSize: 18 }} />}
         label="Quay lại"
         onClick={() => router.back()}
-        variant="outlined"
         sx={{
           mb: 2,
           flexShrink: 0,
           alignSelf: "flex-start",
-          borderRadius: 999,
+          borderRadius: `${radius.pill}px`,
           fontWeight: 600,
-          "& .MuiChip-icon": { ml: 0.5 },
+          bgcolor: "transparent",
+          color: "text.secondary",
+          "&:hover": { bgcolor: "action.hover", color: "text.primary" },
+          "& .MuiChip-icon": { ml: 0.5, color: "inherit" },
         }}
       />
 
@@ -241,47 +245,28 @@ export default function PostDetail() {
           minHeight: 0,
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
-          gap: { xs: 2.5, md: 3 },
+          gap: { xs: 2, md: 3 },
         }}
       >
         {/* ===== CARD BÀI VIẾT ===== */}
         <Paper
           elevation={0}
           sx={(theme) => ({
-            flex: { xs: "none", md: 1.2 },
+            ...surfaceSx(theme),
+            flex: { xs: "none", md: 1.25 },
             minHeight: 0,
             display: "flex",
             flexDirection: "column",
-            borderRadius: 4,
             overflow: "hidden",
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow:
-              theme.palette.mode === "light"
-                ? "0 1px 2px rgba(16,24,40,0.04), 0 12px 32px rgba(16,24,40,0.06)"
-                : "0 12px 32px rgba(0,0,0,0.35)",
           })}
         >
-          {/* Dải gradient đầu card */}
-          <Box
-            sx={(theme) => {
-              const isDark = theme.palette.mode === "dark";
-              const c1 = isDark ? "#1e1b4b" : "#4f46e5";
-              const c2 = isDark ? "#3b0764" : "#7c3aed";
-              return {
-                height: 8,
-                flexShrink: 0,
-                background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
-              };
-            }}
-          />
 
           <Box
             sx={{
-              p: { xs: 2.5, md: 4 },
+              p: { xs: 2, md: 3 },
               flex: 1,
               minHeight: 0,
               overflowY: "auto",
-              scrollbarWidth: "thin",
             }}
           >
           {/* Tác giả */}
@@ -290,23 +275,16 @@ export default function PostDetail() {
               direction="row"
               spacing={1.5}
               alignItems="center"
-              sx={{ mb: 2.5 }}
+              sx={{ mb: 2 }}
             >
-              <Avatar
-                src={author.avatar ?? ""}
-                sx={(theme) => ({
-                  width: 50,
-                  height: 50,
-                  border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                })}
-              >
+              <Avatar src={author.avatar ?? ""} sx={{ width: 44, height: 44 }}>
                 {author.username?.[0]?.toUpperCase()}
               </Avatar>
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle1" fontWeight={700} noWrap>
+                <Typography variant="subtitle2" noWrap>
                   {author.username}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                <Typography variant="caption" color="text.secondary" noWrap component="div">
                   {author.email}
                 </Typography>
               </Box>
@@ -316,12 +294,11 @@ export default function PostDetail() {
           {/* Tiêu đề */}
           <Typography
             variant="h4"
-            fontWeight={800}
             sx={{
-              letterSpacing: "-0.02em",
-              lineHeight: 1.2,
-              fontSize: { xs: 26, md: 34 },
-              mb: 2,
+              lineHeight: 1.25,
+              fontSize: { xs: 22, md: 28 },
+              mb: 1.5,
+              wordBreak: "break-word",
             }}
           >
             {post.title}
@@ -331,7 +308,7 @@ export default function PostDetail() {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ fontSize: 16, lineHeight: 1.75, whiteSpace: "pre-line" }}
+            sx={{ lineHeight: 1.75, whiteSpace: "pre-line" }}
           >
             {post.content ?? "Bài viết chưa có nội dung"}
           </Typography>
@@ -339,17 +316,13 @@ export default function PostDetail() {
           {/* Ảnh - gallery full chiều rộng */}
           {images.length > 0 && (
             <Box
-              sx={(theme) => ({
-                mt: 3,
+              sx={{
+                mt: 2.5,
                 position: "relative",
-                borderRadius: 3,
+                borderRadius: `${radius.md}px`,
                 overflow: "hidden",
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0,0,0,0.4)"
-                    : theme.palette.grey[100],
-              })}
+                bgcolor: "action.hover",
+              }}
             >
               <Box
                 component="img"
@@ -373,9 +346,11 @@ export default function PostDetail() {
                       top: "50%",
                       left: 8,
                       transform: "translateY(-50%)",
-                      bgcolor: "rgba(0,0,0,0.45)",
-                      color: "#fff",
-                      "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                      borderRadius: "50%",
+                      bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+                      color: "common.white",
+                      backdropFilter: "blur(4px)",
+                      "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
                     }}
                   >
                     <ChevronLeftRounded />
@@ -387,9 +362,11 @@ export default function PostDetail() {
                       top: "50%",
                       right: 8,
                       transform: "translateY(-50%)",
-                      bgcolor: "rgba(0,0,0,0.45)",
-                      color: "#fff",
-                      "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                      borderRadius: "50%",
+                      bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+                      color: "common.white",
+                      backdropFilter: "blur(4px)",
+                      "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
                     }}
                   >
                     <ChevronRightRounded />
@@ -403,8 +380,8 @@ export default function PostDetail() {
                       position: "absolute",
                       top: 8,
                       right: 8,
-                      bgcolor: "rgba(0,0,0,0.55)",
-                      color: "#fff",
+                      bgcolor: (t) => alpha(t.palette.common.black, 0.55),
+                      color: "common.white",
                       fontWeight: 600,
                     }}
                   />
@@ -431,10 +408,10 @@ export default function PostDetail() {
                           borderRadius: 4,
                           cursor: "pointer",
                           transition: "all 0.2s",
-                          bgcolor:
+                          bgcolor: (t) =>
                             i === imgIndex % images.length
-                              ? "#fff"
-                              : "rgba(255,255,255,0.5)",
+                              ? t.palette.common.white
+                              : alpha(t.palette.common.white, 0.5),
                         }}
                       />
                     ))}
@@ -450,21 +427,16 @@ export default function PostDetail() {
         <Paper
           elevation={0}
           sx={(theme) => ({
+            ...surfaceSx(theme),
             flex: 1,
             minHeight: { xs: 320, md: 0 },
             display: "flex",
             flexDirection: "column",
-            borderRadius: 4,
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow:
-              theme.palette.mode === "light"
-                ? "0 1px 2px rgba(16,24,40,0.04), 0 12px 32px rgba(16,24,40,0.06)"
-                : "0 12px 32px rgba(0,0,0,0.35)",
           })}
         >
         <Box
           sx={{
-            p: { xs: 2.5, md: 3.5 },
+            p: { xs: 2, md: 2.5 },
             flex: 1,
             minHeight: 0,
             display: "flex",
@@ -476,48 +448,27 @@ export default function PostDetail() {
             direction="row"
             spacing={1.25}
             alignItems="center"
-            mb={2.5}
+            mb={2}
             sx={{ flexShrink: 0 }}
           >
-            <ChatBubbleOutlineRounded sx={{ color: "primary.main" }} />
-            <Typography variant="h6" fontWeight={700}>
-              Bình luận
-            </Typography>
+            <ChatBubbleOutlineRounded fontSize="small" sx={{ color: "text.secondary" }} />
+            <Typography variant="h6">Bình luận</Typography>
             <Chip
               label={commentCount}
               size="small"
-              sx={(theme) => ({
-                fontWeight: 700,
-                bgcolor: alpha(theme.palette.primary.main, 0.12),
-                color: "primary.main",
-              })}
+              sx={{ height: 20, fontSize: 12, fontWeight: 600, bgcolor: "action.hover" }}
             />
           </Stack>
 
           {/* Danh sách bình luận */}
           <Box
-            sx={(theme) => ({
+            sx={{
               flex: 1,
               minHeight: 0,
               overflowY: "auto",
-              pr: 0.5,
               mx: -0.5,
               px: 0.5,
-              scrollbarWidth: "thin",
-              scrollbarColor: `${alpha(
-                theme.palette.primary.main,
-                0.6
-              )} transparent`,
-              "&::-webkit-scrollbar": { width: 8 },
-              "&::-webkit-scrollbar-track": { background: "transparent" },
-              "&::-webkit-scrollbar-thumb": {
-                background: alpha(theme.palette.primary.main, 0.5),
-                borderRadius: 8,
-              },
-              "&::-webkit-scrollbar-thumb:hover": {
-                background: theme.palette.primary.main,
-              },
-            })}
+            }}
           >
             {commentCount > 0 ? (
               <Stack spacing={1.5}>
@@ -532,52 +483,49 @@ export default function PostDetail() {
                     >
                       <Avatar
                         src={c.user?.avatar ?? ""}
-                        sx={{ width: 36, height: 36, mt: 0.25 }}
+                        sx={{ width: 32, height: 32, mt: 0.25, fontSize: 14 }}
                       >
                         {(c.user?.username ?? c.userId)?.[0]?.toUpperCase()}
                       </Avatar>
                       <Box
-                        sx={(theme) => ({
-                          flex: 1,
+                        sx={{
                           minWidth: 0,
-                          p: 1.5,
-                          borderRadius: 3,
-                          borderTopLeftRadius: 4,
-                          backgroundColor:
-                            theme.palette.mode === "light"
-                              ? theme.palette.grey[100]
-                              : alpha(theme.palette.common.white, 0.04),
-                          border: `1px solid ${theme.palette.divider}`,
-                        })}
+                          maxWidth: "100%",
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: "14px",
+                          bgcolor: "action.hover",
+                        }}
                       >
                         <Stack
                           direction="row"
                           spacing={1}
                           alignItems="baseline"
                           flexWrap="wrap"
-                          sx={{ mb: 0.5 }}
+                          sx={{ mb: 0.25 }}
                         >
-                          <Typography variant="subtitle2" fontWeight={700}>
+                          <Typography variant="subtitle2" sx={{ fontSize: 13 }}>
                             {c.user?.username ?? c.userId}
                           </Typography>
                           {date && (
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                            >
-                              {date.toLocaleString("vi-VN", {
+                              title={date.toLocaleString("vi-VN", {
                                 day: "2-digit",
                                 month: "2-digit",
                                 year: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
+                            >
+                              {dayjs(date).fromNow()}
                             </Typography>
                           )}
                         </Stack>
                         <Typography
                           variant="body2"
-                          sx={{ whiteSpace: "pre-line" }}
+                          sx={{ whiteSpace: "pre-line", wordBreak: "break-word" }}
                         >
                           {c.text}
                         </Typography>
@@ -602,8 +550,8 @@ export default function PostDetail() {
           {user && (
             <Box
               sx={(theme) => ({
-                mt: 2.5,
-                pt: 2.5,
+                mt: 2,
+                pt: 2,
                 flexShrink: 0,
                 borderTop: `1px solid ${theme.palette.divider}`,
                 display: "flex",
@@ -611,7 +559,7 @@ export default function PostDetail() {
                 alignItems: "center",
               })}
             >
-              <Avatar src={user.avatar ?? ""} sx={{ width: 40, height: 40 }}>
+              <Avatar src={user.avatar ?? ""} sx={{ width: 32, height: 32, fontSize: 14 }}>
                 {user.username?.[0]?.toUpperCase()}
               </Avatar>
               <TextField
@@ -626,13 +574,22 @@ export default function PostDetail() {
                     handleAddComment();
                   }
                 }}
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: `${radius.pill}px`,
+                    bgcolor: "action.hover",
+                    "& fieldset": { borderColor: "transparent" },
+                    "&:hover fieldset": { borderColor: "divider" },
+                    "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 1 },
+                  },
+                }}
               />
               <IconButton
                 color="primary"
                 onClick={handleAddComment}
                 disabled={!text.trim() || sending}
                 sx={(theme) => ({
+                  borderRadius: "50%",
                   bgcolor: alpha(theme.palette.primary.main, 0.12),
                   "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.2) },
                 })}

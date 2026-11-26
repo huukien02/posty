@@ -17,6 +17,7 @@ import {
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { useUser } from "@/hooks/useUser";
+import { radius, softShadow } from "@/app/lib/theme";
 
 // Chỉ để hiển thị; server (lib/stripe.ts) mới là nguồn sự thật về giá & số slot.
 const plans = [
@@ -102,14 +103,10 @@ export default function StripeTestPage() {
             label="Nạp lượt đăng bài"
             color="primary"
             variant="outlined"
-            sx={{ fontWeight: 700 }}
+            size="small"
+            sx={{ fontWeight: 600 }}
           />
-          <Typography
-            variant="h4"
-            fontWeight={800}
-            textAlign="center"
-            sx={{ letterSpacing: "-0.02em" }}
-          >
+          <Typography variant="h4" textAlign="center">
             Chọn gói phù hợp với bạn
           </Typography>
           <Typography
@@ -146,21 +143,18 @@ export default function StripeTestPage() {
                   display: "flex",
                   flexDirection: "column",
                   p: 3,
-                  borderRadius: 4,
+                  borderRadius: `${radius.lg}px`,
                   overflow: "visible",
                   border: popular
                     ? `2px solid ${theme.palette.primary.main}`
                     : `1px solid ${theme.palette.divider}`,
                   boxShadow: popular
-                    ? `0 18px 40px ${alpha(theme.palette.primary.main, 0.25)}`
-                    : "0 1px 2px rgba(16,24,40,0.04), 0 10px 24px rgba(16,24,40,0.05)",
-                  transition: "transform .25s, box-shadow .25s",
+                    ? `0 12px 32px ${alpha(theme.palette.primary.main, 0.18)}`
+                    : softShadow(theme),
+                  transition: "transform .2s, box-shadow .2s, border-color .2s",
                   "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow: `0 22px 48px ${alpha(
-                      theme.palette.primary.main,
-                      popular ? 0.3 : 0.16
-                    )}`,
+                    transform: "translateY(-3px)",
+                    borderColor: popular ? undefined : alpha(theme.palette.primary.main, 0.4),
                   },
                 })}
               >
@@ -174,13 +168,12 @@ export default function StripeTestPage() {
                       top: -13,
                       left: "50%",
                       transform: "translateX(-50%)",
-                      fontWeight: 700,
-                      boxShadow: 2,
+                      fontWeight: 600,
                     }}
                   />
                 )}
 
-                <Typography variant="overline" color="text.secondary">
+                <Typography variant="h6">
                   {plan.name}
                 </Typography>
                 <Typography
@@ -198,8 +191,8 @@ export default function StripeTestPage() {
                   </Typography>
                   <Typography
                     variant="h3"
-                    fontWeight={800}
-                    sx={{ letterSpacing: "-0.03em", lineHeight: 1 }}
+                    fontWeight={700}
+                    sx={{ letterSpacing: "-0.03em", lineHeight: 1, fontSize: "2.5rem" }}
                   >
                     {plan.amount.toLocaleString()}
                   </Typography>
@@ -213,7 +206,7 @@ export default function StripeTestPage() {
                   sx={{ mt: 1.5 }}
                 >
                   <BoltRounded sx={{ color: "primary.main", fontSize: 20 }} />
-                  <Typography fontWeight={700}>
+                  <Typography fontWeight={600}>
                     +{plan.slots.toLocaleString()} lượt
                   </Typography>
                 </Stack>
@@ -242,7 +235,7 @@ export default function StripeTestPage() {
                   size="large"
                   variant={popular ? "contained" : "outlined"}
                   onClick={() => handleCheckout(plan.amount)}
-                  sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
+                  sx={{ fontWeight: 600 }}
                 >
                   Chọn gói này
                 </Button>

@@ -6,14 +6,13 @@
   }
 
   body {
-    font-family: var(--font-geist-sans), system-ui, -apple-system,
-      "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 }
 
-/* Thanh cuộn mảnh, hiện đại */
 * {
   scrollbar-width: thin;
 }

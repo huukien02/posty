@@ -21,6 +21,9 @@ import {
   Grid,
 } from "@mui/material";
 import Image from "next/image";
+import { alpha } from "@mui/material/styles";
+import { AddPhotoAlternateOutlined, DeleteOutline } from "@mui/icons-material";
+import { radius } from "@/app/lib/theme";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "react-toastify";
 import { uploadFilesToCloudinary } from "@/app/lib/cloudinary";
@@ -185,47 +188,68 @@ export default function PostFormMultiple({
   return (
     <Box
       sx={{
+        width: "100%",
         maxWidth: 600,
         mx: "auto",
-        p: 3,
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        pt: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
       }}
     >
       {/* Title */}
       <TextField
+        label="Tiêu đề"
         placeholder="Bạn đang nghĩ gì?"
         fullWidth
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        sx={{ mb: 1 }}
       />
 
       {/* Content */}
       <TextField
-        placeholder="Nội dung bài viết..."
+        label="Nội dung"
+        placeholder="Chia sẻ thêm chi tiết…"
         fullWidth
         multiline
-        rows={2}
+        rows={3}
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        sx={{ mb: 2 }}
       />
 
       {/* Upload nhiều ảnh */}
-      <Box sx={{ textAlign: "center" }}>
-        <Button
-          variant="outlined"
+      <Box>
+        <Box
           component="label"
-          sx={{
-            mb: 2,
-            borderRadius: 3,
-            border: "2px dashed",
-            borderColor: "primary.main",
-          }}
+          sx={(theme) => ({
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            py: 3,
+            px: 2,
+            borderRadius: `${radius.md}px`,
+            border: `1.5px dashed ${theme.palette.divider}`,
+            bgcolor: "action.hover",
+            color: "text.secondary",
+            cursor: "pointer",
+            textAlign: "center",
+            transition: "border-color .15s, background-color .15s",
+            "&:hover": {
+              borderColor: theme.palette.primary.main,
+              bgcolor: alpha(theme.palette.primary.main, 0.06),
+              color: "primary.main",
+            },
+          })}
         >
-          📸 Chọn nhiều ảnh
+          <AddPhotoAlternateOutlined sx={{ fontSize: 32 }} />
+          <Typography variant="body2" fontWeight={600} color="text.primary">
+            Chọn ảnh để tải lên
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Có thể chọn nhiều ảnh cùng lúc
+          </Typography>
           <input
             type="file"
             hidden
@@ -234,32 +258,30 @@ export default function PostFormMultiple({
             ref={inputRef}
             onChange={handleFileChange}
           />
-        </Button>
+        </Box>
 
         {/* Preview nhiều ảnh */}
         {previews.length > 0 && (
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 2,
-              justifyContent: "left",
-              mb: 3,
+              gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "repeat(4, 1fr)" },
+              gap: 1,
+              mt: 1.5,
             }}
           >
             {previews.map((url, index) => (
               <Box
                 key={index}
-                sx={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: 2,
+                sx={(theme) => ({
+                  pt: "100%",
+                  borderRadius: `${radius.sm}px`,
                   overflow: "hidden",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  border: `1px solid ${theme.palette.divider}`,
                   position: "relative",
                   cursor: "pointer",
                   "&:hover .overlay": { opacity: 1 },
-                }}
+                })}
                 onClick={() => handleRemoveImage(index)}
               >
                 <img
@@ -278,18 +300,19 @@ export default function PostFormMultiple({
                   sx={{
                     position: "absolute",
                     inset: 0,
-                    bgcolor: "rgba(25,118,210,0.5)",
-                    color: "white",
+                    bgcolor: "rgba(15,23,42,0.55)",
+                    color: "common.white",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
+                    gap: 0.5,
+                    fontWeight: 600,
+                    fontSize: "0.8125rem",
                     opacity: 0,
-                    transition: "opacity 0.3s",
+                    transition: "opacity 0.2s",
                   }}
                 >
-                  ❌ Xóa
+                  <DeleteOutline fontSize="small" /> Xóa
                 </Box>
               </Box>
             ))}
@@ -301,19 +324,9 @@ export default function PostFormMultiple({
       <Button
         variant="contained"
         size="large"
+        fullWidth
         onClick={handleSubmit}
-        sx={{
-          borderRadius: 3,
-          background: "linear-gradient(90deg, #1976d2, #42a5f5)",
-          color: "white",
-          fontWeight: "bold",
-          fontSize: "1rem",
-          py: 1,
-          "&:hover": {
-            background: "linear-gradient(90deg, #42a5f5, #1976d2)",
-          },
-          transition: "all 0.3s ease",
-        }}
+        sx={{ opacity: loading ? 0.7 : 1 }}
       >
         {loading ? "Đang xử lý..." : "Đăng bài viết"}
       </Button>

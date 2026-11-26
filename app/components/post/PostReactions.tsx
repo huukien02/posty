@@ -120,9 +120,21 @@ export default function PostReactions({
   if (!post?.id || !currentUserId) return null;
 
   return (
-    <Box display="flex" alignItems="center" mt={1}>
+    <Box display="flex" alignItems="center" gap={1}>
       {/* nút mở reactions */}
-      <IconButton  onClick={handleOpen}>
+      <IconButton
+        onClick={handleOpen}
+        size="small"
+        aria-label="Bày tỏ cảm xúc"
+        sx={{
+          fontSize: 18,
+          borderRadius: "999px",
+          border: 1,
+          borderColor: userReaction ? "primary.main" : "divider",
+          bgcolor: userReaction ? "action.selected" : "transparent",
+          px: 1.25,
+        }}
+      >
         {userReaction ? (
           reactions.find((r) => r.type === userReaction)?.icon
         ) : (
@@ -139,7 +151,7 @@ export default function PostReactions({
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         transformOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Box display="flex" p={1}>
+        <Box display="flex" p={0.75} gap={0.25}>
           {reactions.map((r) => (
             <IconButton
               key={r.type}
@@ -148,6 +160,9 @@ export default function PostReactions({
                 bgcolor:
                   userReaction === r.type ? "action.selected" : "transparent",
                 borderRadius: "50%",
+                fontSize: 22,
+                transition: "transform .15s",
+                "&:hover": { transform: "scale(1.25)" },
               }}
             >
               {r.icon}
@@ -157,13 +172,13 @@ export default function PostReactions({
       </Popover>
 
       {/* hiển thị counts */}
-      <Box ml={2} display="flex" alignItems="center" gap={1}>
+      <Box display="flex" alignItems="center" gap={1.25} sx={{ color: "text.secondary" }}>
         {reactions
           .filter((r) => (reactionsCount[r.type] ?? 0) > 0)
           .map((r) => (
-            <Box key={r.type} display="flex" alignItems="center" gap={0.5}>
+            <Box key={r.type} display="flex" alignItems="center" gap={0.5} sx={{ fontSize: 14 }}>
               {r.icon}
-              <Typography variant="body2">
+              <Typography variant="caption" fontWeight={600}>
                 {reactionsCount[r.type] ?? 0}
               </Typography>
             </Box>

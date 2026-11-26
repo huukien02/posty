@@ -9,12 +9,13 @@ import {
   Avatar,
   Box,
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { MoreHoriz, SendOutlined } from "@mui/icons-material";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useUser } from "@/hooks/useUser";
 import { db, rtdb } from "@/lib/firebase.config";
 import { push, ref, set, update, get } from "firebase/database";
 import { toast } from "react-toastify";
+import { softShadow } from "@/app/lib/theme";
 
 interface UserType {
   id: string;
@@ -168,15 +169,20 @@ const FriendAction: React.FC<FriendActionProps> = ({ postToShare }) => {
       unreadBy,
     });
 
-    toast.success(`Shared to ${receiver.username} successfully!`);
+    toast.success(`Đã chia sẻ cho ${receiver.username}!`);
   };
 
   const open = Boolean(anchorEl);
 
   return (
     <>
-      <IconButton size="small" onClick={handleClick}>
-        <MoreVert fontSize="small" />
+      <IconButton
+        size="small"
+        onClick={handleClick}
+        aria-label="Gửi bài viết cho bạn bè"
+        sx={{ color: "text.secondary", borderRadius: "50%" }}
+      >
+        <MoreHoriz fontSize="small" />
       </IconButton>
 
       <Popover
@@ -185,12 +191,40 @@ const FriendAction: React.FC<FriendActionProps> = ({ postToShare }) => {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{
+          paper: {
+            sx: (t) => ({
+              mt: 0.75,
+              borderRadius: "12px",
+              border: `1px solid ${t.palette.divider}`,
+              boxShadow: softShadow(t),
+            }),
+          },
+        }}
       >
-        <Box p={2} minWidth={220}>
-          <Typography variant="subtitle2" fontWeight="bold" mb={1}>
-            Share post
-          </Typography>
-          <List>
+        <Box p={1} minWidth={260} maxWidth={320}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              px: 1,
+              pt: 0.5,
+              pb: 1,
+              color: "text.secondary",
+            }}
+          >
+            <SendOutlined sx={{ fontSize: 16 }} />
+            <Typography variant="subtitle2" color="text.primary">
+              Gửi cho bạn bè
+            </Typography>
+          </Box>
+          {friends.length === 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 1.5 }}>
+              Bạn chưa có bạn bè nào để gửi.
+            </Typography>
+          )}
+          <List disablePadding sx={{ maxHeight: 320, overflowY: "auto" }}>
             {friends.map((friend) => (
               <ListItemButton
                 key={friend.id}
@@ -233,20 +267,22 @@ const FriendAction: React.FC<FriendActionProps> = ({ postToShare }) => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
-                  borderRadius: 1,
-                  "&:hover": { bgcolor: "action.hover" },
+                  gap: 1.25,
+                  py: 0.75,
+                  borderRadius: "8px",
                 }}
               >
                 <Avatar
                   src={friend.avatar ?? ""}
-                  sx={{ width: 30, height: 30 }}
-                />
-                <Box>
-                  <Typography variant="body2" fontWeight="bold">
+                  sx={{ width: 32, height: 32, fontSize: 14 }}
+                >
+                  {friend.username?.[0]?.toUpperCase()}
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={600} noWrap>
                     {friend.username}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" noWrap component="div">
                     {friend.email}
                   </Typography>
                 </Box>

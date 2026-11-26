@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import PostCard from "./PostCard";
 import { Box, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { ArticleOutlined } from "@mui/icons-material";
 import PaginationCustom from "../PaginationCustom";
 import type { PostWithDetails } from "../../lib/fetchPosts";
 
@@ -10,9 +11,9 @@ function PostSkeleton() {
     <Paper
       elevation={0}
       sx={(theme) => ({
-        mb: 3,
+        mb: 2,
         p: 2,
-        borderRadius: 4,
+        borderRadius: "16px",
         border: `1px solid ${theme.palette.divider}`,
       })}
     >
@@ -23,7 +24,7 @@ function PostSkeleton() {
           <Skeleton variant="text" width="25%" />
         </Box>
       </Stack>
-      <Skeleton variant="rounded" height={180} sx={{ borderRadius: 2, mb: 2 }} />
+      <Skeleton variant="rounded" height={180} sx={{ borderRadius: "12px", mb: 2 }} />
       <Skeleton variant="text" width="90%" />
       <Skeleton variant="text" width="70%" />
     </Paper>
@@ -78,12 +79,13 @@ export default function PostList({
         sx={(theme) => ({
           py: 8,
           textAlign: "center",
-          borderRadius: 4,
+          borderRadius: "16px",
           border: `1px dashed ${theme.palette.divider}`,
         })}
       >
-        <Typography variant="h6" fontWeight={700} gutterBottom>
-          Chưa có bài viết nào 📭
+        <ArticleOutlined sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+        <Typography variant="h6" gutterBottom>
+          Chưa có bài viết nào
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Hãy quay lại sau để xem những câu chuyện mới nhất.
@@ -104,7 +106,7 @@ export default function PostList({
       ))}
 
       {totalPages > 1 && (
-        <Box py={2} display="flex" justifyContent="center" mt={3}>
+        <Box py={2} display="flex" justifyContent="center" mt={1}>
           <PaginationCustom
             totalPages={totalPages}
             currentPage={currentPage}

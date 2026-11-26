@@ -45,11 +45,11 @@ export default function SettingDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>Chat Settings</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+      <DialogTitle>Tuỳ chỉnh cuộc trò chuyện</DialogTitle>
       <DialogContent>
         <TextField
-          label="Background Color"
+          label="Màu nền"
           type="color"
           fullWidth
           margin="dense"
@@ -58,7 +58,7 @@ export default function SettingDialog({
         />
         <TextField
           select
-          label="Font Family"
+          label="Phông chữ"
           fullWidth
           margin="dense"
           value={theme.fontFamily}
@@ -72,9 +72,9 @@ export default function SettingDialog({
         </TextField>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose} color="inherit">Huỷ</Button>
         <Button onClick={handleSave} variant="contained">
-          Save
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>

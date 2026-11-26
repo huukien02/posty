@@ -55,6 +55,8 @@ import AddIcon from "@mui/icons-material/Add";
 import PostImageSlider from "../components/post/PostImageSlider";
 import PostFormMultiple from "../components/post/PostFormMultiple";
 import PostTitle from "../components/post/PostTitle";
+import { ArticleOutlined } from "@mui/icons-material";
+import { radius, softShadow, surfaceSx, layout } from "../lib/theme";
 interface Post {
   id: string;
   title: string;
@@ -231,7 +233,12 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  if (!user) return <Typography>Loading user...</Typography>;
+  if (!user)
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography color="text.secondary">Đang tải hồ sơ…</Typography>
+      </Box>
+    );
 
   // Pagination logic
   const indexOfLastPost = currentPage * postsPerPage;
@@ -246,42 +253,37 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+    <Container
+      maxWidth={false}
+      sx={{ maxWidth: layout.contentWidth, py: { xs: 2, md: 3 }, px: { xs: 1.5, sm: 2, md: 3 } }}
+    >
       {/* ===== Header hồ sơ ===== */}
       <Paper
         elevation={0}
         sx={(theme) => ({
+          ...surfaceSx(theme),
           overflow: "hidden",
-          borderRadius: 4,
-          border: `1px solid ${theme.palette.divider}`,
-          mb: 4,
+          mb: 3,
         })}
       >
-        {/* Ảnh bìa gradient */}
+        {/* Ảnh bìa: nền trung tính pha nhẹ màu chủ đạo */}
         <Box
-          sx={(theme) => {
-            const isDark = theme.palette.mode === "dark";
-            const c1 = isDark ? "#1e1b4b" : "#4f46e5";
-            const c2 = isDark ? "#3b0764" : "#7c3aed";
-            return {
-              height: { xs: 110, md: 150 },
-              background: `radial-gradient(120% 120% at 85% 10%, ${alpha(
-                "#ffffff",
-                isDark ? 0.08 : 0.16
-              )} 0%, transparent 50%), linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
-            };
-          }}
+          sx={(theme) => ({
+            height: { xs: 96, md: 140 },
+            bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.14 : 0.08),
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          })}
         />
-        <Box sx={{ px: { xs: 2, md: 4 }, pb: 3 }}>
+        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
             alignItems={{ xs: "flex-start", sm: "flex-end" }}
             sx={{ mt: { xs: -6, md: -7 } }}
           >
-            <ProfileAvatar size={100} />
+            <ProfileAvatar size={96} />
             <Box sx={{ flex: 1, pb: 0.5, minWidth: 0 }}>
-              <Typography variant="h5" fontWeight={800} noWrap>
+              <Typography variant="h5" noWrap>
                 {user.username || user.email}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
@@ -290,9 +292,9 @@ const ProfilePage: React.FC = () => {
             </Box>
             <Stack
               direction="row"
-              spacing={1.5}
+              spacing={1}
               divider={<Divider orientation="vertical" flexItem />}
-              sx={{ pb: 0.5 }}
+              sx={{ pb: 0.5, alignSelf: { xs: "stretch", sm: "flex-end" } }}
             >
               <ProfileStat value={stats.total} label="Bài viết" />
               <ProfileStat value={stats.favorites} label="Yêu thích" />
@@ -304,7 +306,7 @@ const ProfilePage: React.FC = () => {
 
       <Stack
         direction="row"
-        spacing={1.5}
+        spacing={1}
         flexWrap="wrap"
         useFlexGap
         sx={{ mb: 3 }}
@@ -313,16 +315,16 @@ const ProfilePage: React.FC = () => {
           startIcon={openPostForm ? <CloseIcon /> : <AddIcon />}
           onClick={() => setOpenPostForm((prev) => !prev)}
           variant={openPostForm ? "contained" : "outlined"}
-          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
+          sx={{ flex: { xs: 1, sm: "none" } }}
         >
-          Bài viết
+          Tạo bài viết
         </Button>
 
         <Button
           startIcon={openCollection ? <CloseIcon /> : <PermMediaIcon />}
           onClick={() => setOpenCollection((prev) => !prev)}
           variant={openCollection ? "contained" : "outlined"}
-          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
+          sx={{ flex: { xs: 1, sm: "none" } }}
         >
           Bộ sưu tập
         </Button>
@@ -331,7 +333,7 @@ const ProfilePage: React.FC = () => {
           startIcon={openFilter ? <CloseIcon /> : <SearchIcon />}
           onClick={() => setOpenFilter((prev) => !prev)}
           variant={openFilter ? "contained" : "outlined"}
-          sx={{ borderRadius: 2.5, px: 3, py: 1.1 }}
+          sx={{ flex: { xs: 1, sm: "none" } }}
         >
           Bộ lọc
         </Button>
@@ -366,7 +368,7 @@ const ProfilePage: React.FC = () => {
       </Dialog>
 
       {openCollection && (
-        <Box mb={4} width={"100%"}>
+        <Box mb={3} width={"100%"}>
           <CollectionManager
             collections={collections}
             refreshCollections={fetchCollections}
@@ -378,12 +380,14 @@ const ProfilePage: React.FC = () => {
         <Paper
           elevation={0}
           sx={(theme) => ({
+            ...surfaceSx(theme),
             p: { xs: 2, md: 3 },
-            mb: 4,
-            borderRadius: 4,
-            border: `1px solid ${theme.palette.divider}`,
+            mb: 3,
           })}
         >
+          <Typography variant="subtitle1" mb={2}>
+            Lọc bài viết
+          </Typography>
           {/* Filter Date + Favorite */}
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box
@@ -394,51 +398,51 @@ const ProfilePage: React.FC = () => {
               flexWrap="wrap"
             >
               <DatePicker
-                label="Start Date"
+                label="Từ ngày"
                 value={startDate}
                 onChange={(newValue) => setStartDate(newValue)}
-                slotProps={{ textField: { variant: "outlined" } }}
+                slotProps={{ textField: { variant: "outlined", size: "small" } }}
               />
               <DatePicker
-                label="End Date"
+                label="Đến ngày"
                 value={endDate}
                 onChange={(newValue) => setEndDate(newValue)}
-                slotProps={{ textField: { variant: "outlined" } }}
+                slotProps={{ textField: { variant: "outlined", size: "small" } }}
               />
-              <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>Favorite</InputLabel>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Yêu thích</InputLabel>
                 <Select
                   value={favoriteFilter}
-                  label="Favorite"
+                  label="Yêu thích"
                   onChange={(e) => setFavoriteFilter(e.target.value as any)}
                 >
-                  <MenuItem value="all">All</MenuItem>
-                  <MenuItem value="favorite">Favorite</MenuItem>
-                  <MenuItem value="notFavorite">Not Favorite</MenuItem>
+                  <MenuItem value="all">Tất cả</MenuItem>
+                  <MenuItem value="favorite">Đã yêu thích</MenuItem>
+                  <MenuItem value="notFavorite">Chưa yêu thích</MenuItem>
                 </Select>
               </FormControl>
 
-              <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>Visible</InputLabel>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Hiển thị</InputLabel>
                 <Select
                   value={visibleFilter}
-                  label="Visible"
+                  label="Hiển thị"
                   onChange={(e) => setVisibleFilter(e.target.value as any)}
                 >
-                  <MenuItem value="all">All</MenuItem>
-                  <MenuItem value="visible">Visible</MenuItem>
-                  <MenuItem value="notVisible">Not Visible</MenuItem>
+                  <MenuItem value="all">Tất cả</MenuItem>
+                  <MenuItem value="visible">Đang hiện</MenuItem>
+                  <MenuItem value="notVisible">Đang ẩn</MenuItem>
                 </Select>
               </FormControl>
 
-              <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>Collection</InputLabel>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Bộ sưu tập</InputLabel>
                 <Select
                   value={selectedCollection}
-                  label="Collection"
+                  label="Bộ sưu tập"
                   onChange={(e) => setSelectedCollection(e.target.value)}
                 >
-                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="all">Tất cả</MenuItem>
                   {collections.map((col) => (
                     <MenuItem key={col.id} value={col.id}>
                       {col.title}
@@ -452,14 +456,12 @@ const ProfilePage: React.FC = () => {
               <Button
                 variant="contained"
                 onClick={() => fetchUserPosts(user.email)}
-                sx={{ borderRadius: 2.5, px: 3 }}
               >
                 Áp dụng
               </Button>
               <Button
                 variant="outlined"
-                color="secondary"
-                sx={{ borderRadius: 2.5, px: 3 }}
+                color="inherit"
                 onClick={() => {
                   setStartDate(null);
                   setEndDate(null);
@@ -476,8 +478,12 @@ const ProfilePage: React.FC = () => {
       )}
 
       {selectedCollection !== "all" && (
-        <Typography variant="h5" mb={2} sx={{ fontWeight: "bold" }}>
-          <PermMediaIcon />{" "}
+        <Typography
+          variant="h6"
+          mb={2}
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
+          <PermMediaIcon sx={{ color: "text.secondary" }} />
           {collections &&
             collections.find((col) => col.id == selectedCollection)?.title}
         </Typography>
@@ -491,9 +497,10 @@ const ProfilePage: React.FC = () => {
             gridTemplateColumns: {
               xs: "1fr",
               sm: "repeat(2, 1fr)",
-              md: "repeat(4, 1fr)",
+              md: "repeat(3, 1fr)",
+              lg: "repeat(4, 1fr)",
             },
-            gap: 2.5,
+            gap: 2,
           }}
         >
           {Array.from({ length: 8 }).map((_, i) => (
@@ -501,7 +508,7 @@ const ProfilePage: React.FC = () => {
               <Skeleton
                 variant="rounded"
                 height={170}
-                sx={{ borderRadius: 3, mb: 1 }}
+                sx={{ borderRadius: `${radius.md}px`, mb: 1 }}
               />
               <Skeleton variant="text" width="80%" />
               <Skeleton variant="text" width="50%" />
@@ -514,15 +521,16 @@ const ProfilePage: React.FC = () => {
           sx={(theme) => ({
             py: 8,
             textAlign: "center",
-            borderRadius: 4,
+            borderRadius: `${radius.lg}px`,
             border: `1px dashed ${theme.palette.divider}`,
           })}
         >
-          <Typography variant="h6" fontWeight={700} gutterBottom>
-            Chưa có bài viết nào 📭
+          <ArticleOutlined sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+          <Typography variant="h6" gutterBottom>
+            Chưa có bài viết nào
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Nhấn “Bài viết” để tạo bài đầu tiên của bạn.
+            Nhấn “Tạo bài viết” để đăng bài đầu tiên của bạn.
           </Typography>
         </Paper>
       ) : (
@@ -533,9 +541,10 @@ const ProfilePage: React.FC = () => {
               gridTemplateColumns: {
                 xs: "1fr",
                 sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
+                md: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
               },
-              gap: 2.5,
+              gap: 2,
             }}
           >
             {currentPosts.map((post) => (
@@ -545,15 +554,15 @@ const ProfilePage: React.FC = () => {
                 sx={(theme) => ({
                   position: "relative",
                   cursor: "pointer",
-                  borderRadius: 3,
+                  borderRadius: `${radius.md}px`,
                   border: `1px solid ${theme.palette.divider}`,
                   overflow: "hidden",
-                  transition:
-                    "transform .25s, box-shadow .25s, border-color .25s",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "box-shadow .2s, border-color .2s",
                   "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: "0 14px 30px rgba(2,6,23,0.12)",
-                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    boxShadow: softShadow(theme),
+                    borderColor: alpha(theme.palette.primary.main, 0.35),
                   },
                 })}
               >
@@ -585,11 +594,12 @@ const ProfilePage: React.FC = () => {
                         post={post}
                         refreshCollections={fetchCollections}
                       />
-                      <Tooltip title="Download">
+                      <Tooltip title="Tải xuống">
                         <IconButton
                           size="small"
                           sx={(theme) => ({
-                            bgcolor: alpha(theme.palette.background.paper, 0.7),
+                            bgcolor: alpha(theme.palette.background.paper, 0.85),
+                            backdropFilter: "blur(4px)",
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.background.paper,
@@ -605,11 +615,12 @@ const ProfilePage: React.FC = () => {
                           <DownloadIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Zoom">
+                      <Tooltip title="Phóng to">
                         <IconButton
                           size="small"
                           sx={(theme) => ({
-                            bgcolor: alpha(theme.palette.background.paper, 0.7),
+                            bgcolor: alpha(theme.palette.background.paper, 0.85),
+                            backdropFilter: "blur(4px)",
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.background.paper,
@@ -626,12 +637,13 @@ const ProfilePage: React.FC = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip
-                        title={post.favorite ? "Favorite" : "UnFavorite"}
+                        title={post.favorite ? "Bỏ yêu thích" : "Yêu thích"}
                       >
                         <IconButton
                           size="small"
                           sx={(theme) => ({
-                            bgcolor: alpha(theme.palette.background.paper, 0.7),
+                            bgcolor: alpha(theme.palette.background.paper, 0.85),
+                            backdropFilter: "blur(4px)",
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.background.paper,
@@ -652,13 +664,14 @@ const ProfilePage: React.FC = () => {
                       </Tooltip>
                       <Tooltip
                         title={
-                          post.visible !== false ? "Hide Post" : "Show Post"
+                          post.visible !== false ? "Ẩn bài viết" : "Hiện bài viết"
                         }
                       >
                         <IconButton
                           size="small"
                           sx={(theme) => ({
-                            bgcolor: alpha(theme.palette.background.paper, 0.7),
+                            bgcolor: alpha(theme.palette.background.paper, 0.85),
+                            backdropFilter: "blur(4px)",
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.background.paper,
@@ -697,14 +710,18 @@ const ProfilePage: React.FC = () => {
                     toggleVisible={toggleVisible}
                   />
                 )}
-                <CardContent>
+                <CardContent sx={{ px: 0, pt: 1.5, pb: "12px !important", flex: 1 }}>
                   {/* <Typography variant="h6">{post.title}</Typography> */}
                   <PostTitle post={post} />
-                  <Typography variant="body2" mb={1}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ px: 2, mb: 1, wordBreak: "break-word" }}
+                  >
                     {post.thrilled}
                   </Typography>
-                  <Typography variant="caption" sx={{ marginLeft:2 }}>
-                    {new Date(post.createdAt).toLocaleString()}
+                  <Typography variant="caption" color="text.secondary" sx={{ px: 2 }}>
+                    {new Date(post.createdAt).toLocaleString("vi-VN")}
                   </Typography>
                 </CardContent>
               </Card>
@@ -714,7 +731,7 @@ const ProfilePage: React.FC = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <Box
-              sx={{ mt: 4, pb: 2, display: "flex", justifyContent: "center" }}
+              sx={{ mt: 3, pb: 2, display: "flex", justifyContent: "center" }}
             >
               <PaginationCustom
                 totalPages={totalPages}
@@ -774,8 +791,8 @@ const ProfilePage: React.FC = () => {
 
 function ProfileStat({ value, label }: { value: number; label: string }) {
   return (
-    <Box sx={{ textAlign: "center", px: 1.5, minWidth: 64 }}>
-      <Typography variant="h6" fontWeight={800} lineHeight={1.1}>
+    <Box sx={{ textAlign: "center", px: 1.5, minWidth: 64, flex: { xs: 1, sm: "none" } }}>
+      <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
         {value}
       </Typography>
       <Typography variant="caption" color="text.secondary">

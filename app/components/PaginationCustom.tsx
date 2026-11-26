@@ -62,16 +62,14 @@ export default function PaginationCustom({
     currentPage < totalPages && onPageChange(currentPage + 1);
 
   const navBtnSx = {
-    width: 38,
-    height: 38,
-    borderRadius: "12px",
-    border: (t: any) => `1px solid ${t.palette.divider}`,
-    bgcolor: "background.paper",
+    width: 36,
+    height: 36,
+    borderRadius: "8px",
+    color: "text.secondary",
     transition: "all .15s ease",
     "&:hover": {
-      borderColor: "primary.main",
-      color: "primary.main",
-      transform: "translateY(-1px)",
+      bgcolor: "action.hover",
+      color: "text.primary",
     },
     "&.Mui-disabled": { opacity: 0.4 },
   } as const;
@@ -81,15 +79,11 @@ export default function PaginationCustom({
       sx={(theme) => ({
         display: "inline-flex",
         alignItems: "center",
-        gap: 0.75,
-        p: 0.75,
-        borderRadius: "16px",
+        gap: 0.5,
+        p: 0.5,
+        borderRadius: "12px",
         bgcolor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
-        boxShadow:
-          theme.palette.mode === "light"
-            ? "0 4px 16px rgba(16,24,40,0.06)"
-            : "none",
       })}
     >
       <IconButton
@@ -98,7 +92,7 @@ export default function PaginationCustom({
         size="small"
         sx={navBtnSx}
       >
-        <ChevronLeft />
+        <ChevronLeft fontSize="small" />
       </IconButton>
 
       {pages.map((p, index) =>
@@ -106,10 +100,10 @@ export default function PaginationCustom({
           <Box
             key={`gap-${index}`}
             sx={{
-              width: 38,
+              width: 28,
               textAlign: "center",
               color: "text.secondary",
-              fontWeight: 700,
+              fontWeight: 600,
               userSelect: "none",
             }}
           >
@@ -124,27 +118,23 @@ export default function PaginationCustom({
               const active = p === currentPage;
               return {
                 cursor: "pointer",
-                minWidth: 38,
-                height: 38,
+                minWidth: 36,
+                height: 36,
                 px: 1,
-                borderRadius: "12px",
+                borderRadius: "8px",
                 border: "none",
                 fontFamily: "inherit",
                 fontSize: 14,
-                fontWeight: 700,
+                fontWeight: active ? 600 : 500,
                 transition: "all .15s ease",
-                color: active ? "#fff" : theme.palette.text.primary,
-                background: active
-                  ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                  : "transparent",
-                boxShadow: active
-                  ? "0 6px 16px rgba(79,70,229,0.35)"
-                  : "none",
+                color: active
+                  ? theme.palette.primary.contrastText
+                  : theme.palette.text.primary,
+                bgcolor: active ? theme.palette.primary.main : "transparent",
                 "&:hover": active
                   ? {}
                   : {
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
+                      bgcolor: alpha(theme.palette.text.primary, 0.06),
                     },
               };
             }}
@@ -160,7 +150,7 @@ export default function PaginationCustom({
         size="small"
         sx={navBtnSx}
       >
-        <ChevronRight />
+        <ChevronRight fontSize="small" />
       </IconButton>
     </Box>
   );

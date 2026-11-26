@@ -73,7 +73,6 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              borderRadius: 2,
             }}
           />
         </motion.div>
@@ -86,17 +85,19 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
           top: 8,
           right: 8,
           display: "flex",
-          gap: 1,
+          gap: 0.75,
         }}
       >
         {PostActionsComponent &&  PostActionsComponent }
-        <Tooltip title="Download">
+        <Tooltip title="Tải xuống">
           <IconButton
             size="small"
             sx={(theme) => ({
-              bgcolor: alpha(theme.palette.background.paper, 0.7),
+              borderRadius: "50%",
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: "blur(4px)",
               "&:hover": {
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                bgcolor: theme.palette.background.paper,
               },
             })}
             onClick={async (e) => {
@@ -128,13 +129,15 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
           </IconButton>
         </Tooltip>
 
-        <Tooltip title="Zoom">
+        <Tooltip title="Phóng to">
           <IconButton
             size="small"
             sx={(theme) => ({
-              bgcolor: alpha(theme.palette.background.paper, 0.7),
+              borderRadius: "50%",
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: "blur(4px)",
               "&:hover": {
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                bgcolor: theme.palette.background.paper,
               },
             })}
             onClick={(e) => {
@@ -146,13 +149,15 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
           </IconButton>
         </Tooltip>
 
-        <Tooltip title={post.favorite ? "Favorite" : "UnFavorite"}>
+        <Tooltip title={post.favorite ? "Bỏ yêu thích" : "Yêu thích"}>
           <IconButton
             size="small"
             sx={(theme) => ({
-              bgcolor: alpha(theme.palette.background.paper, 0.7),
+              borderRadius: "50%",
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: "blur(4px)",
               "&:hover": {
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                bgcolor: theme.palette.background.paper,
               },
             })}
             onClick={(e) => {
@@ -167,13 +172,15 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
           </IconButton>
         </Tooltip>
 
-        <Tooltip title={post.visible !== false ? "Hide Post" : "Show Post"}>
+        <Tooltip title={post.visible !== false ? "Ẩn bài viết" : "Hiện bài viết"}>
           <IconButton
             size="small"
             sx={(theme) => ({
-              bgcolor: alpha(theme.palette.background.paper, 0.7),
+              borderRadius: "50%",
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: "blur(4px)",
               "&:hover": {
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                bgcolor: theme.palette.background.paper,
               },
             })}
             onClick={(e) => {
@@ -201,9 +208,12 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
               top: "50%",
               left: 8,
               transform: "translateY(-50%)",
-              bgcolor: "rgba(0,0,0,0.3)",
-              color: "white",
-              "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
+              borderRadius: "50%",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              color: "common.white",
+              backdropFilter: "blur(4px)",
+              "& svg": { fontSize: 14 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -217,9 +227,12 @@ const PostImageSlider: React.FC<PostImageSliderProps> = ({
               top: "50%",
               right: 8,
               transform: "translateY(-50%)",
-              bgcolor: "rgba(0,0,0,0.3)",
-              color: "white",
-              "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
+              borderRadius: "50%",
+              bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+              color: "common.white",
+              backdropFilter: "blur(4px)",
+              "& svg": { fontSize: 14 },
+              "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
             }}
           >
             <ArrowForwardIosIcon fontSize="small" />

@@ -30,6 +30,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import FriendAction from "./FriendAction";
 import PostImageDisplay from "./PostImageDisplay";
 import PostTitle from "./PostTitle";
+import dayjs from "@/app/lib/dayjs";
 interface User {
   id: string;
   username: string;
@@ -104,12 +105,19 @@ export default function PostCard({
     onRefresh();
   }
 
+
+  const actionSx = {
+    flex: 1,
+    color: "text.secondary",
+    fontWeight: 600,
+    gap: 0.75,
+    "&:hover": { color: "text.primary" },
+  } as const;
+
   return (
     <Card
       sx={{
-        mb: 3,
-        borderRadius: 2,
-        boxShadow: 2,
+        mb: 2,
         overflow: "hidden",
         bgcolor: "background.paper",
         display: "flex",
@@ -121,48 +129,40 @@ export default function PostCard({
         avatar={
           <Avatar
             src={post.author.avatar ?? ""}
-            sx={{ width: 30, height: 30 }}
-          />
+            sx={{ width: 40, height: 40 }}
+          >
+            {post.author.username?.charAt(0)?.toUpperCase()}
+          </Avatar>
         }
         title={
-          <Typography fontWeight="bold" variant="body2">
+          <Typography fontWeight={600} variant="body2" color="text.primary">
             {post.author.username}
           </Typography>
         }
         subheader={
-          <Typography variant="caption">
-            {createdDate.toLocaleString()}
-          </Typography>
+          <Tooltip title={createdDate.toLocaleString("vi-VN")} placement="bottom-start">
+            <Typography variant="caption" color="text.secondary" component="span">
+              {dayjs(createdDate).fromNow()}
+            </Typography>
+          </Tooltip>
         }
         action={<FriendAction postToShare={post} />}
-        sx={{ pb: 0 }}
+        sx={{ pb: 1, "& .MuiCardHeader-action": { alignSelf: "center", m: 0 } }}
       />
 
       <PostTitle post={post} />
 
-      {/* Title */}
-      {/* <Typography
-        variant="subtitle1"
-        px={2}
-        pt={0.5}
-        pb={0.5}
-        fontWeight="bold"
-        noWrap
-      >
-        {post.title}
-      </Typography> */}
-
       {/* Image */}
       {post.imageUrl && (
-        <Box px={2} mb={1}>
+        <Box sx={{ mt: 1, bgcolor: "action.hover" }}>
           <img
             src={post.imageUrl}
             alt={post.title}
             style={{
+              display: "block",
               width: "100%",
-              maxHeight: "auto",
+              maxHeight: 640,
               objectFit: "cover",
-              borderRadius: "8px",
             }}
           />
         </Box>
@@ -170,123 +170,62 @@ export default function PostCard({
 
       {post?.imageUrls?.length > 0 && <PostImageDisplay post={post} />}
 
-      <CardContent sx={{ pt: 0, pb: 1, flex: 1 }}>
+      <CardContent sx={{ pt: 1, pb: "12px !important", flex: 1 }}>
         {/* Content */}
-        <Typography
-          sx={{ mb: 1, whiteSpace: "pre-line", fontSize: "0.85rem" }}
-          noWrap
-        >
-          {post.thrilled}
-        </Typography>
-
-        {/* {!post.sent && (
-          <Typography variant="caption" color="error">
-            (Not sent yet)
+        {post.thrilled && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 1, whiteSpace: "pre-line" }}
+            noWrap
+          >
+            {post.thrilled}
           </Typography>
-        )} */}
+        )}
 
-        <Box>
-          {/* Actions */}
-          <Box
-            mt={2}
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            {/* Reactions */}
-            {user && (
-              <PostReactions post={post} currentUserId={currentUserId} />
+        {/* Reactions */}
+        {user && <PostReactions post={post} currentUserId={currentUserId} />}
+
+        {/* Actions */}
+        <Divider sx={{ mt: 1 }} />
+        <Stack direction="row" sx={{ py: 0.5 }}>
+          <Button color="inherit" sx={actionSx} startIcon={<ChatBubbleOutlineIcon fontSize="small" />}>
+            Bình luận
+            {post.comments.length > 0 && (
+              <Box component="span" sx={{ fontWeight: 500 }}>
+                ({post.comments.length})
+              </Box>
             )}
-
-            {/* Comment + Share */}
-            <Stack direction="row" spacing={2} alignItems="center">
-              {/* Comment */}
-              <Stack direction="row" alignItems="center">
-                <Tooltip title="Bình luận">
-                  <IconButton
-                    color="secondary"
-                    sx={(theme) => ({
-                      fontSize: "2rem",
-                      color:
-                        theme.palette.mode === "light"
-                          ? theme.palette.text.primary
-                          : theme.palette.text.secondary,
-                    })}
-                  >
-                    💬{" "}
-                    <span style={{ fontSize: "0.75rem" }}>
-                      {post.comments.length > 0 && post.comments.length}
-                    </span>
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-
-              {/* Share */}
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Tooltip title="Chia sẻ bài viết">
-                  <IconButton
-                    color="primary"
-                    onClick={handleShare}
-                    sx={(theme) => ({
-                      fontSize: "2rem",
-                      color:
-                        theme.palette.mode === "light"
-                          ? theme.palette.text.primary
-                          : theme.palette.text.secondary,
-                    })}
-                  >
-                    📤{" "}
-                    <span style={{ fontSize: "0.75rem" }}>
-                      {" "}
-                      {post.shareCount > 0 && post.shareCount}
-                    </span>
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Stack>
-          </Box>
-
-          {/* Comment list */}
-          <Divider sx={{ my: 1 }} />
-          <Box
-            sx={(theme) => ({
-              maxHeight: 150,
-              overflowY: "auto",
-              pr: 2,
-              borderRadius: 2,
-              // custom scrollbar
-              "&::-webkit-scrollbar": {
-                width: "6px",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor:
-                  theme.palette.mode === "light"
-                    ? theme.palette.grey[400]
-                    : theme.palette.grey[700],
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor:
-                  theme.palette.mode === "light"
-                    ? theme.palette.grey[200]
-                    : theme.palette.background.default,
-              },
-            })}
+          </Button>
+          <Button
+            color="inherit"
+            onClick={handleShare}
+            sx={actionSx}
+            startIcon={<ShareIcon fontSize="small" />}
           >
-            <CommentList comments={post.comments} />
-          </Box>
+            Chia sẻ
+            {post.shareCount > 0 && (
+              <Box component="span" sx={{ fontWeight: 500 }}>
+                ({post.shareCount})
+              </Box>
+            )}
+          </Button>
+        </Stack>
+        <Divider sx={{ mb: 1 }} />
 
-          {/* Comment form  */}
-          {user && (
-            <Box mt={1}>
-              <CommentBox
-                postId={post.id}
-                userId={currentUserId}
-                onCommentAdded={onRefresh}
-              />
-            </Box>
-          )}
+        {/* Comment list */}
+        <Box sx={{ maxHeight: 220, overflowY: "auto", pr: 1 }}>
+          <CommentList comments={post.comments} />
         </Box>
+
+        {/* Comment form  */}
+        {user && (
+          <CommentBox
+            postId={post.id}
+            userId={currentUserId}
+            onCommentAdded={onRefresh}
+          />
+        )}
       </CardContent>
     </Card>
   );

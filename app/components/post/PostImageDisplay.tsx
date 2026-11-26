@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Box, IconButton } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -24,13 +25,12 @@ const PostImageDisplay = ({ post }: { post: any }) => {
   if (images.length === 1) {
     return (
       <Box
-        px={2}
-        mb={1}
         sx={{
+          mt: 1,
           position: "relative",
           width: "100%",
           aspectRatio: "16 / 9",
-          borderRadius: 2,
+          bgcolor: "action.hover",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
@@ -57,10 +57,9 @@ const PostImageDisplay = ({ post }: { post: any }) => {
         position: "relative",
         width: "100%",
         aspectRatio: "16 / 9",
-        borderRadius: 2,
+        bgcolor: "action.hover",
         overflow: "hidden",
-        mb: 1,
-        px: 2,
+        mt: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -80,7 +79,6 @@ const PostImageDisplay = ({ post }: { post: any }) => {
             width: "100%",
             height: "100%",
             objectFit: "contain",
-            borderRadius: "8px",
           }}
         />
       </AnimatePresence>
@@ -94,11 +92,16 @@ const PostImageDisplay = ({ post }: { post: any }) => {
         sx={{
           position: "absolute",
           top: "50%",
-          left: 16,
+          left: 12,
           transform: "translateY(-50%)",
-          bgcolor: "rgba(0,0,0,0.4)",
-          color: "white",
-          "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+          color: "common.white",
+          backdropFilter: "blur(4px)",
+          "& svg": { fontSize: 14 },
+          "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
         }}
       >
         <ArrowBackIosNewIcon fontSize="small" />
@@ -113,11 +116,16 @@ const PostImageDisplay = ({ post }: { post: any }) => {
         sx={{
           position: "absolute",
           top: "50%",
-          right: 16,
+          right: 12,
           transform: "translateY(-50%)",
-          bgcolor: "rgba(0,0,0,0.4)",
-          color: "white",
-          "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          bgcolor: (t) => alpha(t.palette.common.black, 0.45),
+          color: "common.white",
+          backdropFilter: "blur(4px)",
+          "& svg": { fontSize: 14 },
+          "&:hover": { bgcolor: (t) => alpha(t.palette.common.black, 0.65) },
         }}
       >
         <ArrowForwardIosIcon fontSize="small" />

@@ -18,6 +18,7 @@ import {
   BoltRounded,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { radius, softShadow, surfaceSx } from "@/app/lib/theme";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase.config";
 import { useSearchParams } from "next/navigation";
@@ -89,13 +90,13 @@ export default function CheckoutSuccessPage() {
   const renderMessage = () => {
     switch (status) {
       case "loading":
-        return "⏳ Đang xác nhận giao dịch...";
+        return "Đang xác nhận giao dịch…";
       case "success":
         return postsRemaining !== null
           ? `Số lượt đăng bài hiện tại của bạn: ${postsRemaining}.`
           : "Cảm ơn bạn đã mua hàng. Lượt đăng bài sẽ được cộng sau khi thanh toán được xác nhận.";
       case "error":
-        return "❌ Không xác nhận được giao dịch. Nếu đã bị trừ tiền, lượt sẽ được cộng tự động sau ít phút. Vui lòng liên hệ hỗ trợ nếu cần.";
+        return "Không xác nhận được giao dịch. Nếu đã bị trừ tiền, lượt sẽ được cộng tự động sau ít phút. Vui lòng liên hệ hỗ trợ nếu cần.";
     }
   };
 
@@ -118,13 +119,11 @@ export default function CheckoutSuccessPage() {
     >
       <Container maxWidth="xs" disableGutters>
         <Paper
-          elevation={0}
           sx={(theme) => ({
+            ...surfaceSx(theme),
             p: { xs: 3, md: 4 },
-            borderRadius: 4,
             textAlign: "center",
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: "0 12px 40px rgba(2,6,23,0.10)",
+            boxShadow: softShadow(theme),
           })}
         >
           {/* Icon trạng thái */}
@@ -137,8 +136,8 @@ export default function CheckoutSuccessPage() {
                   ? theme.palette.warning.main
                   : theme.palette.primary.main;
               return {
-                width: 84,
-                height: 84,
+                width: 72,
+                height: 72,
                 borderRadius: "50%",
                 mx: "auto",
                 mb: 2.5,
@@ -153,13 +152,13 @@ export default function CheckoutSuccessPage() {
             {status === "loading" ? (
               <CircularProgress size={36} />
             ) : status === "success" ? (
-              <CheckCircleRounded sx={{ fontSize: 48 }} />
+              <CheckCircleRounded sx={{ fontSize: 40 }} />
             ) : (
-              <ErrorOutlineRounded sx={{ fontSize: 48 }} />
+              <ErrorOutlineRounded sx={{ fontSize: 40 }} />
             )}
           </Box>
 
-          <Typography variant="h5" fontWeight={800} gutterBottom>
+          <Typography variant="h5" gutterBottom>
             {title}
           </Typography>
 
@@ -177,7 +176,7 @@ export default function CheckoutSuccessPage() {
               sx={(theme) => ({
                 mt: 3,
                 py: 1.5,
-                borderRadius: 3,
+                borderRadius: `${radius.md}px`,
                 bgcolor: alpha(theme.palette.primary.main, 0.08),
               })}
             >
@@ -196,7 +195,6 @@ export default function CheckoutSuccessPage() {
               variant="contained"
               size="large"
               fullWidth
-              sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
             >
               Quay về trang chủ
             </Button>
@@ -207,8 +205,7 @@ export default function CheckoutSuccessPage() {
                 variant="outlined"
                 size="large"
                 fullWidth
-                sx={{ borderRadius: 2.5, py: 1.25, fontWeight: 700 }}
-              >
+                >
                 Thử lại
               </Button>
             )}

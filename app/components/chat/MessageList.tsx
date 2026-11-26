@@ -31,13 +31,14 @@ export default function MessageList({
     <Box
       flex={1}
       mt={2}
-      border="1px solid #ccc"
-      borderRadius={2}
       p={2}
       overflow="auto"
       display="flex"
       flexDirection="column"
       sx={{
+        border: 1,
+        borderColor: "divider",
+        borderRadius: "16px",
         backgroundColor: bgcolor,
         fontFamily: fontFamily,
       }}
@@ -52,16 +53,23 @@ export default function MessageList({
             component="span"
             sx={{
               display: "inline-block",
-              bgcolor: m.sender === currentUser ? "#cce5ff" : "#eee",
-              borderRadius: 1,
-              px: 1,
-              py: 0.5,
+              maxWidth: "70%",
+              textAlign: "left",
+              wordBreak: "break-word",
+              bgcolor: m.sender === currentUser ? "primary.main" : "action.hover",
+              color: m.sender === currentUser ? "primary.contrastText" : "text.primary",
+              borderRadius: "18px",
+              ...(m.sender === currentUser
+                ? { borderBottomRightRadius: 6 }
+                : { borderBottomLeftRadius: 6 }),
+              px: 1.75,
+              py: 1,
             }}
           >
             {m.text}
           </Typography>
           <Typography
-            sx={{ fontSize: "0.65rem", color: "#666", mt: 0.3 }}
+            sx={{ fontSize: "0.6875rem", color: "text.secondary", mt: 0.5, px: 0.5 }}
             variant="caption"
             display="block"
           >

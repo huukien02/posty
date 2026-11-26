@@ -14,6 +14,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { radius, softShadow } from "../lib/theme";
 import {
   Send,
   Search as SearchIcon,
@@ -361,9 +362,9 @@ export default function ChatPage() {
           bgcolor: theme.palette.background.paper,
         })}
       >
-        <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
-          <Typography variant="h6" fontWeight={800} sx={{ mb: 1.5 }}>
-            Tin nhắn 💬
+        <Box sx={{ px: 2, pt: 2.5, pb: 1.5 }}>
+          <Typography variant="h6" sx={{ mb: 1.5 }}>
+            Tin nhắn
           </Typography>
           <TextField
             fullWidth
@@ -371,7 +372,13 @@ export default function ChatPage() {
             placeholder="Tìm bạn bè..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: `${radius.pill}px`,
+                bgcolor: "action.hover",
+                "& fieldset": { borderColor: "transparent" },
+              },
+            }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -388,23 +395,12 @@ export default function ChatPage() {
         </Box>
 
         <Box
-          sx={(theme) => ({
+          sx={{
             flex: 1,
             overflowY: "auto",
             minHeight: 0,
             px: 1,
-            scrollbarWidth: "thin",
-            scrollbarColor: `${alpha(
-              theme.palette.primary.main,
-              0.6
-            )} transparent`,
-            "&::-webkit-scrollbar": { width: 8 },
-            "&::-webkit-scrollbar-thumb": {
-              background: alpha(theme.palette.primary.main, 0.5),
-              borderRadius: 8,
-            },
-            "&::-webkit-scrollbar-track": { background: "transparent" },
-          })}
+          }}
         >
           {conversations.length === 0 ? (
             <Typography
@@ -431,18 +427,17 @@ export default function ChatPage() {
                     selected={selectedUser?.id === u.id}
                     onClick={() => handleSelectUser(u)}
                     sx={{
-                      borderRadius: 2.5,
-                      mb: 0.5,
+                      borderRadius: `${radius.md}px`,
+                      mb: 0.25,
                       py: 1,
+                      px: 1.25,
                       "&.Mui-selected": {
-                        bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
-                        "&:hover": {
-                          bgcolor: (t) => alpha(t.palette.primary.main, 0.18),
-                        },
+                        bgcolor: "action.selected",
+                        "&:hover": { bgcolor: "action.selected" },
                       },
                     }}
                   >
-                    <ListItemAvatar>
+                    <ListItemAvatar sx={{ minWidth: 52 }}>
                       <Badge
                         overlap="circular"
                         variant="dot"
@@ -451,8 +446,8 @@ export default function ChatPage() {
                         anchorOrigin={{ vertical: "top", horizontal: "right" }}
                         sx={{
                           "& .MuiBadge-dot": {
-                            height: 14,
-                            minWidth: 14,
+                            height: 12,
+                            minWidth: 12,
                             borderRadius: "50%",
                             border: (t) =>
                               `2px solid ${t.palette.background.paper}`,
@@ -461,7 +456,7 @@ export default function ChatPage() {
                       >
                         <Avatar
                           src={u.avatar || undefined}
-                          sx={{ width: 48, height: 48 }}
+                          sx={{ width: 40, height: 40 }}
                         >
                           {u.username?.[0]?.toUpperCase()}
                         </Avatar>
@@ -478,8 +473,8 @@ export default function ChatPage() {
                         <Typography
                           noWrap
                           sx={{
-                            fontSize: "0.9rem",
-                            fontWeight: hasNew ? 800 : 600,
+                            fontSize: "0.875rem",
+                            fontWeight: hasNew ? 700 : 600,
                           }}
                         >
                           {u.username}
@@ -488,7 +483,7 @@ export default function ChatPage() {
                           <Typography
                             variant="caption"
                             color={hasNew ? "primary.main" : "text.secondary"}
-                            sx={{ flexShrink: 0, fontWeight: hasNew ? 700 : 400 }}
+                            sx={{ flexShrink: 0, fontWeight: hasNew ? 600 : 400 }}
                           >
                             {formatTime(room.updatedAt)}
                           </Typography>
@@ -505,7 +500,7 @@ export default function ChatPage() {
                           sx={{
                             fontSize: "0.78rem",
                             color: hasNew ? "text.primary" : "text.secondary",
-                            fontWeight: hasNew ? 700 : 400,
+                            fontWeight: hasNew ? 600 : 400,
                           }}
                         >
                           {preview}
@@ -549,18 +544,18 @@ export default function ChatPage() {
               spacing={1.5}
               alignItems="center"
               sx={(theme) => ({
-                px: 2.5,
-                py: 1.5,
+                px: { xs: 2, md: 2.5 },
+                minHeight: 64,
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 bgcolor: theme.palette.background.paper,
                 flexShrink: 0,
               })}
             >
-              <Avatar src={selectedUser.avatar || undefined}>
+              <Avatar src={selectedUser.avatar || undefined} sx={{ width: 40, height: 40 }}>
                 {selectedUser.username?.[0]?.toUpperCase()}
               </Avatar>
-              <Box>
-                <Typography fontWeight={700} lineHeight={1.2}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography fontWeight={600} lineHeight={1.3} noWrap>
                   {selectedUser.username}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -572,24 +567,13 @@ export default function ChatPage() {
             {/* Danh sách tin nhắn */}
             <Box
               ref={scrollRef}
-              sx={(theme) => ({
+              sx={{
                 flex: 1,
                 overflowY: "auto",
                 minHeight: 0,
                 px: { xs: 2, md: 4 },
                 py: 3,
-                scrollbarWidth: "thin",
-                scrollbarColor: `${alpha(
-                  theme.palette.primary.main,
-                  0.5
-                )} transparent`,
-                "&::-webkit-scrollbar": { width: 8 },
-                "&::-webkit-scrollbar-thumb": {
-                  background: alpha(theme.palette.primary.main, 0.4),
-                  borderRadius: 8,
-                },
-                "&::-webkit-scrollbar-track": { background: "transparent" },
-              })}
+              }}
             >
               {messages.length === 0 ? (
                 <Stack
@@ -604,11 +588,11 @@ export default function ChatPage() {
                   >
                     {selectedUser.username?.[0]?.toUpperCase()}
                   </Avatar>
-                  <Typography fontWeight={700} color="text.primary">
+                  <Typography fontWeight={600} color="text.primary">
                     {selectedUser.username}
                   </Typography>
                   <Typography variant="body2">
-                    Hãy gửi lời chào để bắt đầu trò chuyện 👋
+                    Hãy gửi lời chào để bắt đầu trò chuyện
                   </Typography>
                 </Stack>
               ) : (
@@ -633,18 +617,15 @@ export default function ChatPage() {
                           sx={{ display: "flex", justifyContent: "center", my: 2 }}
                         >
                           <Box
-                            sx={(theme) => ({
+                            sx={{
                               px: 1.5,
                               py: 0.25,
-                              borderRadius: 999,
+                              borderRadius: `${radius.pill}px`,
                               fontSize: 11,
                               fontWeight: 600,
                               color: "text.secondary",
-                              bgcolor:
-                                theme.palette.mode === "light"
-                                  ? theme.palette.grey[100]
-                                  : alpha("#ffffff", 0.08),
-                            })}
+                              bgcolor: "action.hover",
+                            }}
                           >
                             {formatDayLabel(msg.createdAt)}
                           </Box>
@@ -674,7 +655,7 @@ export default function ChatPage() {
                         <Box
                           sx={{
                             position: "relative",
-                            maxWidth: "72%",
+                            maxWidth: "70%",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: isOwn ? "flex-end" : "flex-start",
@@ -692,26 +673,22 @@ export default function ChatPage() {
                               p: isImage ? 0.5 : "8px 14px",
                               maxWidth: "100%",
                               cursor: "pointer",
-                              borderRadius: 3,
+                              borderRadius: "18px",
                               ...(isOwn
-                                ? { borderBottomRightRadius: 4 }
-                                : { borderBottomLeftRadius: 4 }),
+                                ? { borderBottomRightRadius: 6 }
+                                : { borderBottomLeftRadius: 6 }),
                               bgcolor: isImage
                                 ? "transparent"
                                 : isOwn
                                 ? theme.palette.primary.main
-                                : theme.palette.mode === "light"
-                                ? theme.palette.grey[100]
-                                : alpha("#ffffff", 0.08),
+                                : theme.palette.action.hover,
                               color: isOwn
                                 ? theme.palette.primary.contrastText
                                 : theme.palette.text.primary,
                               border: isImage
                                 ? `1px solid ${theme.palette.divider}`
                                 : "none",
-                              boxShadow: isImage
-                                ? "0 2px 8px rgba(2,6,23,0.12)"
-                                : "none",
+                              boxShadow: isImage ? softShadow(theme) : "none",
                             })}
                           >
                             {msg.type === "image" ? (
@@ -754,7 +731,7 @@ export default function ChatPage() {
                                   borderRadius: "12px",
                                   px: 0.5,
                                   py: 0.1,
-                                  boxShadow: "0 2px 6px rgba(2,6,23,0.15)",
+                                  boxShadow: softShadow(theme),
                                 })}
                               >
                                 {Object.values(msg.reactions).map(
@@ -783,8 +760,8 @@ export default function ChatPage() {
                                 gap: "2px",
                                 bgcolor: theme.palette.background.paper,
                                 border: `1px solid ${theme.palette.divider}`,
-                                borderRadius: "999px",
-                                boxShadow: "0 8px 24px rgba(2,6,23,0.2)",
+                                borderRadius: `${radius.pill}px`,
+                                boxShadow: softShadow(theme),
                                 px: 0.5,
                                 py: 0.25,
                                 zIndex: 10,
@@ -824,7 +801,7 @@ export default function ChatPage() {
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ fontSize: "0.62rem", mt: 0.5, px: 0.5 }}
+                              sx={{ fontSize: "0.6875rem", mt: 0.5, px: 0.5 }}
                             >
                               {formatTime(msg.createdAt)}
                             </Typography>
@@ -840,7 +817,8 @@ export default function ChatPage() {
             {/* Ô nhập */}
             <Box
               sx={(theme) => ({
-                p: 1.5,
+                px: { xs: 1.5, md: 2.5 },
+                py: 1.5,
                 borderTop: `1px solid ${theme.palette.divider}`,
                 bgcolor: theme.palette.background.paper,
                 flexShrink: 0,
@@ -853,15 +831,13 @@ export default function ChatPage() {
                 sx={(theme) => ({
                   p: 0.5,
                   pl: 2,
-                  borderRadius: 999,
-                  border: `1px solid ${theme.palette.divider}`,
-                  bgcolor:
-                    theme.palette.mode === "light"
-                      ? theme.palette.grey[50]
-                      : alpha("#ffffff", 0.04),
-                  transition: "border-color .15s",
+                  borderRadius: "24px",
+                  border: "1px solid transparent",
+                  bgcolor: theme.palette.action.hover,
+                  transition: "border-color .15s, box-shadow .15s",
                   "&:focus-within": {
                     borderColor: theme.palette.primary.main,
+                    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.15)}`,
                   },
                 })}
               >
@@ -888,8 +864,9 @@ export default function ChatPage() {
                   sx={(theme) => ({
                     bgcolor: theme.palette.primary.main,
                     color: theme.palette.primary.contrastText,
-                    width: 40,
-                    height: 40,
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
                     flexShrink: 0,
                     "&:hover": { bgcolor: theme.palette.primary.dark },
                     "&.Mui-disabled": {
@@ -911,8 +888,23 @@ export default function ChatPage() {
             spacing={1.5}
             sx={{ color: "text.secondary", p: 4, textAlign: "center" }}
           >
-            <ChatBubbleOutline sx={{ fontSize: 56, opacity: 0.4 }} />
-            <Typography fontWeight={600}>Chọn một người để bắt đầu</Typography>
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "action.hover",
+                mb: 0.5,
+              }}
+            >
+              <ChatBubbleOutline sx={{ fontSize: 32, color: "text.secondary" }} />
+            </Box>
+            <Typography fontWeight={600} color="text.primary">
+              Chọn một cuộc trò chuyện
+            </Typography>
             <Typography variant="body2">
               Tin nhắn của bạn sẽ hiển thị ở đây.
             </Typography>

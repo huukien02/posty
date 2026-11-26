@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./components/layout/ClientLayout";
 import FirebaseMessagingSetup from "./components/FirebaseMessagingSetup";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const sans = Be_Vietnam_Pro({
+  variable: "--font-sans",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Posty",
-  description: "Posty",
+  description: "Posty — chia sẻ khoảnh khắc cùng bạn bè",
 };
 
 export default function RootLayout({
@@ -25,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="vi">
+      <body className={`${sans.variable} ${geistMono.variable} antialiased`}>
         <ClientLayout>{children}</ClientLayout>
         <FirebaseMessagingSetup />
       </body>
